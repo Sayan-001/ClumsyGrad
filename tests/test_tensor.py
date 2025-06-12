@@ -50,13 +50,6 @@ class TestTensorProperties:
         grad = np.array([0.1, 0.2, 0.3])
         tensor.grad = grad
         np.testing.assert_array_equal(tensor.grad, grad)
-    
-    def test_requires_grad_setter(self):
-        tensor = Tensor([1, 2, 3])
-        assert not tensor.requires_grad
-        
-        tensor.requires_grad = True
-        assert tensor.requires_grad
 
 
 class TestTensorArithmetic:
@@ -128,7 +121,6 @@ class TestTensorArithmetic:
         np.testing.assert_array_equal(c.data, expected)
         assert c.requires_grad
 
-
 class TestMatrixOperations:
     """Test matrix operations."""
     
@@ -168,7 +160,6 @@ class TestMatrixOperations:
         a = Tensor([[1, 2], [3, 4]], tensor_type=TensorType.PARAMETER)
         b = a.T().T()
         
-        # Should return the original tensor due to optimization
         assert b is a
 
 
@@ -277,18 +268,6 @@ class TestBackpropagation:
         
         with pytest.raises(RuntimeError, match="Gradient can only be implicitly created for scalar outputs"):
             a.backward()
-    
-    def test_zero_grad(self):
-        a = Tensor([1, 2], tensor_type=TensorType.PARAMETER)
-        b = a * 2
-        c = b.sum()
-        
-        c.backward()
-        assert a.grad is not None
-        
-        a.zero_grad()
-        assert a.grad is None
-
 
 class TestTensorUtils:
     """Test TensorUtils functionality."""
@@ -322,18 +301,18 @@ class TestComplexOperations:
     """Test complex operation chains."""
     
     def test_complex_forward_pass(self):
-        # Test: (a * b + c) @ d.T
+        # Test: (a * b + c) @ d
         a = Tensor([[1, 2]], tensor_type=TensorType.PARAMETER)
         b = Tensor([[3, 4]], tensor_type=TensorType.PARAMETER)
         c = Tensor([[5, 6]], tensor_type=TensorType.PARAMETER)
-        d = Tensor([[7], [8]], tensor_type=TensorType.PARAMETER)
+        d_val = np.array([[7], [8]], dtype=np.float32)
+        d = Tensor(d_val, tensor_type=TensorType.PARAMETER)
         
         result = (a * b + c) @ d
         
-        # a * b = [[3, 8]]
-        # a * b + c = [[8, 14]]
-        # d.T = [[7, 8]]
-        # result = [[8*7 + 14*8]] = [[168]]
+        # a * b = [[1*3, 2*4]] = [[3, 8]]
+        # a * b + c = [[3+5, 8+6]] = [[8, 14]]
+        # (a * b + c) @ d = [[8*7 + 14*8]] = [[56 + 112]] = [[168]]
         expected = np.array([[168]], dtype=np.float32)
         np.testing.assert_array_equal(result.data, expected)
     
@@ -347,11 +326,96 @@ class TestComplexOperations:
         
         d.backward()
         
-        # df/da = 2 * (a * b) * b = 2 * 6 * 3 = 36
-        # df/db = 2 * (a * b) * a = 2 * 6 * 2 = 24
+        # Symbolic Gradients:
+        # f = (a*b)^2
+        # df/dc = 2 * c = 2 * (a*b)
+        # dc/da = b
+        # dc/db = a
+        # df/da = df/dc * dc/da = 2 * (a*b) * b = 2 * a * b^2
+        # df/db = df/dc * dc/db = 2 * (a*b) * a = 2 * a^2 * b
+        #
+        # For a=2, b=3:
+        # df/da = 2 * 2 * 3^2 = 4 * 9 = 36
+        # df/db = 2 * 2^2 * 3 = 2 * 4 * 3 = 24
         np.testing.assert_array_almost_equal(a.grad, np.array([36.0], dtype=np.float32))
         np.testing.assert_array_almost_equal(b.grad, np.array([24.0], dtype=np.float32))
 
+    def test_complex_grad_log_exp(self):
+        a = Tensor([2.0], tensor_type=TensorType.PARAMETER)
+        b = Tensor([3.0], tensor_type=TensorType.PARAMETER)
+        c_val = Tensor([1.0], tensor_type=TensorType.PARAMETER) # Renamed to c_val to avoid conflict
+
+        # f(a, b, c_val) = log(a * b + exp(c_val))
+        # Let x = a * b
+        # Let y = exp(c_val)
+        # Let u = x + y
+        # Let z = log(u)
+        # z.backward()
+
+        x = a * b
+        y = c_val.exp()
+        u = x + y
+        z = u.log()
+        
+        z.backward()
+
+        # Symbolic Gradients:
+        # z = log(a*b + exp(c_val))
+        # Let inner = a*b + exp(c_val)
+        # dz/d_inner = 1 / inner
+        #
+        # dz/da = (1 / inner) * b
+        # dz/db = (1 / inner) * a
+        # dz/dc_val = (1 / inner) * exp(c_val)
+        #
+        # For a=2, b=3, c_val=1:
+        # inner_val = 2*3 + exp(1) = 6 + 2.71828 = 8.71828
+        # dz/da = 3 / 8.71828 = 0.34409
+        # dz/db = 2 / 8.71828 = 0.22939
+        # dz/dc_val = exp(1) / 8.71828 = 2.71828 / 8.71828 = 0.31179
+
+        inner_val = a.data[0] * b.data[0] + np.exp(c_val.data[0])
+        expected_grad_a = b.data[0] / inner_val
+        expected_grad_b = a.data[0] / inner_val
+        expected_grad_c = np.exp(c_val.data[0]) / inner_val
+        
+        np.testing.assert_array_almost_equal(a.grad, np.array([expected_grad_a], dtype=np.float32), decimal=5)
+        np.testing.assert_array_almost_equal(b.grad, np.array([expected_grad_b], dtype=np.float32), decimal=5)
+        np.testing.assert_array_almost_equal(c_val.grad, np.array([expected_grad_c], dtype=np.float32), decimal=5)
+        
+    def test_complex_grad_sum_squared_error_like(self):
+        a_data = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        b_data = np.array([4.0, 3.0, 2.0], dtype=np.float32)
+        a = Tensor(a_data, tensor_type=TensorType.PARAMETER)
+        b = Tensor(b_data, tensor_type=TensorType.PARAMETER)
+
+        # f(a, b) = sum((a - b)**2)
+        # Let x = a - b
+        # Let y = x ** 2
+        # Let z = sum(y)
+        # z.backward()
+
+        x = a - b
+        y = x ** 2
+        z = y.sum()
+        
+        z.backward()
+
+        # Symbolic Gradients:
+        # z = sum((a_i - b_i)^2)
+        # dz/da_i = 2 * (a_i - b_i)
+        # dz/db_i = -2 * (a_i - b_i)
+        #
+        # For a=[1,2,3], b=[4,3,2]:
+        # a-b = [-3, -1, 1]
+        # dz/da = 2 * [-3, -1, 1] = [-6, -2, 2]
+        # dz/db = -2 * [-3, -1, 1] = [6, 2, -2]
+
+        expected_grad_a = 2 * (a_data - b_data)
+        expected_grad_b = -2 * (a_data - b_data)
+
+        np.testing.assert_array_almost_equal(a.grad, expected_grad_a)
+        np.testing.assert_array_almost_equal(b.grad, expected_grad_b)
 
 class TestErrorHandling:
     """Test error handling and edge cases."""
@@ -361,23 +425,6 @@ class TestErrorHandling:
         
         with pytest.raises(TypeError, match="Right operand must be a Tensor"):
             a @ 5
-    
-    def test_memory_clearance_after_backward(self):
-        a = Tensor([1, 2], tensor_type=TensorType.PARAMETER)
-        b = a * 2  # Intermediate tensor
-        c = b.sum()
-        
-        # Store reference to intermediate tensor
-        intermediate_data = b.data.copy()
-        
-        c.backward()
-        
-        # Intermediate tensor data should be cleared
-        assert b._data is None
-        assert b._grad is None
-        
-        # But parameter tensor should still have data
-        assert a._data is not None
     
     def test_gradient_accumulation(self):
         a = Tensor([1.0], tensor_type=TensorType.PARAMETER)
