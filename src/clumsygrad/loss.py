@@ -25,10 +25,7 @@ def mse_loss(pred: Tensor, target: Tensor) -> Tensor:
     diff = pred - target
     mse = (diff * diff).mean()
     
-    return Tensor._create_node(mse._data, 
-                               parents=(pred, target), 
-                               grad_fn=mse_backward, 
-                               requires_grad=pred._requires_grad or target._requires_grad)
+    return Tensor._create_node(mse._data, grad_fn=mse_backward, parents=(pred, target))
     
 def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
     """
@@ -48,7 +45,4 @@ def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
     diff = pred - target
     mae = diff.abs().mean()
     
-    return Tensor._create_node(mae._data, 
-                               parents=(pred, target), 
-                               grad_fn=mae_backward,
-                               requires_grad=pred._requires_grad or target._requires_grad)
+    return Tensor._create_node(mae._data, grad_fn=mae_backward, parents=(pred, target))

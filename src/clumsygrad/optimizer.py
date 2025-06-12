@@ -14,7 +14,14 @@ class SGD:
     """
     
     def __init__(self, parameters: List[Tensor], lr: float = 0.01):
-        # Filter to only include parameter tensors
+        """
+        Initialize the SGD optimizer.
+        
+        Args:
+            parameters (List[Tensor]): List of parameter tensors to optimize.
+            lr (float): Learning rate for the optimizer. Default is 0.01.
+        """
+    
         self.parameters = [p for p in parameters if p._tensor_type == TensorType.PARAMETER]
         self.lr = lr
     

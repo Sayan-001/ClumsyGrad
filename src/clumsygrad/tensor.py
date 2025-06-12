@@ -1,6 +1,7 @@
 """
 This module contains the Tensor class implementation for automatic differentiation.
 It supports basic tensor operations, tracks gradients, and can be used to build computational graphs for backpropagation.
+It also contains some utility functions for managing tensors and their gradients.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ class Tensor:
     """
     A tensor class for automatic differentiation.
     This class supports basic tensor operations and tracks gradients.
-    It can be used to build computational graphs for backpropagation.
+    It is used to build computational graphs for backpropagation.
     """
     
     _global_tensor_registry = weakref.WeakValueDictionary()
@@ -29,26 +30,38 @@ class Tensor:
     def _create_node(data: np.ndarray, 
                      grad_fn: Optional[Callable], 
                      parents: Tuple[Tensor, ...],
-                     requires_grad: bool = True,
                      extra: Optional[dict] = None) -> Tensor:
+        
+        """
+        Creates a new tensor node in the computational graph.
+        
+        Args:
+            data: The data for the new tensor.
+            grad_fn: The gradient function to use for backpropagation.
+            parents: The parent tensors that this tensor depends on.
+            extra: Additional metadata for the tensor (optional).
+            
+        Returns:
+            A new Tensor instance representing the node in the computational graph. 
+        """
         
         node = Tensor(data=data, tensor_type=TensorType.INTERMEDIATE)
         node._grad_fn = grad_fn
         node._parents = parents
-        node._requires_grad = requires_grad
+        node._requires_grad = any(parent._requires_grad for parent in parents)
         
-        if extra:
-            node._extra.update(extra)
-    
-        for parent in parents:
-            if parent._children is None:
-                parent._children = []
-            parent._children.append(node)
+        if extra: node._extra.update(extra)
+        for parent in parents: parent._children.append(node)
         
         return node
     
     @staticmethod
     def clear_stale_tensors():
+        """
+        Remove all tensors that are marked as stale from memory.
+        This is required to prevent unnecessary tensor objects from accumulating in memory.
+        """
+        
         for tensor in list(Tensor._global_tensor_registry.values()):
             if tensor._stale:
                 del Tensor._global_tensor_registry[tensor._id]
@@ -62,12 +75,13 @@ class Tensor:
         
         Args:
             data: The initial data for the tensor.
-            tensor_type: The type of the tensor (INPUT/PARAMETER/INTERMEDIATE).
+            tensor_type: The type of the tensor, as TensorType.INPUT/PARAMETER/INTERMEDIATE.
             
         Note: 
             The tensor will not track/propagate gradients if it is of type INPUT.
             If it is of type PARAMETER, it will be treated as a trainable parameter.
-            Using INTERMEDIATE tensor type is not recommended unless you are explicitly creating a node in the graph.
+            Using INTERMEDIATE tensor type is nuanced and not recommended 
+            unless you are explicitly creating a node in the graph.
         """
         
         self._data = np.array(data, dtype=np.float32)
@@ -76,14 +90,14 @@ class Tensor:
         self._grad = None
         self._tensor_type = tensor_type
         
-        if self._tensor_type == TensorType.INPUT:
-            self._requires_grad = False
-        else:
+        if self._tensor_type == TensorType.PARAMETER:
             self._requires_grad = True
+        else:
+            self._requires_grad = False
         
         self._stale = False
         self._parents: Tuple[Tensor, ...] = ()
-        self._children: Optional[List[Tensor]] = []
+        self._children: List[Tensor] = []
         
         self._id = Tensor._id_counter
         Tensor._id_counter += 1
@@ -124,23 +138,19 @@ class Tensor:
         """Return whether this tensor requires gradients."""
         return self._requires_grad
     
-    @requires_grad.setter
-    def requires_grad(self, value: bool):
-        """Set whether this tensor requires gradients."""
-        self._requires_grad = value
-    
     def T(self) -> Tensor:
-        """Transpose the tensor."""
+        """Returns a transpose of the tensor."""
+        new_tensor = None
+        
         if (self._grad_fn == transpose_backward and len(self._parents) == 1):
             self._stale = True
-            return self._parents[0]
-        
-        new_tensor = Tensor._create_node(
-            data=self._data.T,
-            grad_fn=transpose_backward,
-            parents=(self,),
-            requires_grad=self._requires_grad
-        )
+            new_tensor = self._parents[0]
+        else:
+            new_tensor = Tensor._create_node(
+                data=self._data.T,
+                grad_fn=transpose_backward,
+                parents=(self,),
+            )
         
         return new_tensor
     
@@ -153,14 +163,12 @@ class Tensor:
                 data=self._data + other._data,
                 grad_fn=add_backward,
                 parents=(self, other),
-                requires_grad=self._requires_grad or other._requires_grad
             )
         else:
             new_tensor = Tensor._create_node(
                 data=self._data + other,
                 grad_fn=add_scalar_backward,
                 parents=(self,),
-                requires_grad=self._requires_grad,
                 extra={'scalar_value': float(other)}
             )
         
@@ -175,14 +183,12 @@ class Tensor:
                 data=self._data - other._data,
                 grad_fn=sub_backward,
                 parents=(self, other),
-                requires_grad=self._requires_grad or other._requires_grad
             )
         else:
             new_tensor = Tensor._create_node(
                 data=self._data - other,
                 grad_fn=sub_scalar_backward,
                 parents=(self,),
-                requires_grad=self._requires_grad,
                 extra={'scalar_value': float(other)}
             )
         
@@ -197,14 +203,12 @@ class Tensor:
                 data=self._data * other._data,
                 grad_fn=mul_backward,
                 parents=(self, other),
-                requires_grad=self._requires_grad or other._requires_grad
             )
         else:
             new_tensor = Tensor._create_node(
                 data=self._data * other,
                 grad_fn=mul_scalar_backward,
                 parents=(self,),
-                requires_grad=self._requires_grad,
                 extra={'scalar_value': float(other)}
             )
         
@@ -224,9 +228,7 @@ class Tensor:
             data=self._data @ other._data,
             grad_fn=matmul_backward,
             parents=(self, other),
-            requires_grad=self._requires_grad or other._requires_grad
         )
-        
         return new_tensor
     
     def __pow__(self, power: float) -> Tensor:
@@ -234,10 +236,8 @@ class Tensor:
             data=self._data ** power,
             grad_fn=power_backward,
             parents=(self,),
-            requires_grad=self._requires_grad,
             extra={'power': float(power)}
         )
-        
         return new_tensor
     
     def __neg__(self) -> Tensor:
@@ -245,35 +245,63 @@ class Tensor:
             data=-self._data,
             grad_fn=negate_backward,
             parents=(self,),
-            requires_grad=self._requires_grad
         )
-        
         return new_tensor
     
     def sum(self, axis=None, keepdims=False) -> Tensor:
+        """
+        Compute the sum of the tensor along specified axis.
+        
+        Args:
+            axis: Axis or axes along which the sum is computed. Default is None, which computes the sum of the flattened array.
+            keepdims: If True, the reduced axes are left in the result as dimensions with size one.
+            
+        Returns:
+            A new Tensor containing the sum of the input tensor.
+        """
+        
         new_tensor = Tensor._create_node(
             data=np.sum(self._data, axis=axis, keepdims=keepdims),
             grad_fn=sum_backward,
             parents=(self,),
-            requires_grad=self._requires_grad,
             extra={'axis': axis, 'keepdims': keepdims, 'input_shape': self._shape}
         )
-        
         return new_tensor
     
     def mean(self, axis=None, keepdims=False) -> Tensor:
-        """Compute the mean of tensor elements."""
+        """
+        Compute the mean of the tensor along specified axis.
+        
+        Args:
+            axis: Axis or axes along which the means are computed. Default is None, which computes the mean of the flattened array.
+            keepdims: If True, the reduced axes are left in the result as dimensions with size one.
+            
+        Returns:
+            A new Tensor containing the mean of the input tensor.
+        """
+        
         new_tensor = Tensor._create_node(
             data=np.mean(self._data, axis=axis, keepdims=keepdims),
             grad_fn=mean_backward,
             parents=(self,),
-            requires_grad=self._requires_grad,
             extra={'axis': axis, 'keepdims': keepdims, 'input_shape': self._shape}
         )
         return new_tensor
     
     def reshape(self, new_shape: Tuple[int, ...]) -> Tensor:
-        """Reshape the tensor to a new shape."""
+        """
+        Reshape the tensor to a new shape.
+        
+        Args:
+            new_shape: The desired shape for the tensor.
+            
+        Returns:
+            A new Tensor with the reshaped data.
+            
+        Raises:
+            ValueError: If the new shape does not have the same number of elements as the original shape.
+        """
+    
         if np.prod(new_shape) != np.prod(self._shape):
             raise ValueError("New shape must have the same number of elements as the original shape.")
         
@@ -281,29 +309,37 @@ class Tensor:
             data=self._data.reshape(new_shape),
             grad_fn=reshape_backward,
             parents=(self,),
-            requires_grad=self._requires_grad,
             extra={'original_shape': self._shape}
         )
-        
         return new_tensor
 
     def abs(self) -> Tensor:
-        """Compute absolute value of tensor."""
+        """
+        Compute the absolute value of the tensor.
+
+        Returns:
+            A new Tensor containing the absolute values of the input tensor.
+        """
+        
         new_tensor = Tensor._create_node(
             data=np.abs(self._data),
             grad_fn=abs_backward,
             parents=(self,),
-            requires_grad=self._requires_grad
         )
         return new_tensor
 
     def exp(self) -> Tensor:
-        """Compute exponential of tensor."""
+        """
+        Compute the exponential of the tensor.
+        
+        Returns:
+            A new Tensor containing the exponential values of the input tensor.
+        """
+        
         new_tensor = Tensor._create_node(
             data=np.exp(self._data),
             grad_fn=exp_backward,
             parents=(self,),
-            requires_grad=self._requires_grad
         )
         return new_tensor
 
@@ -313,11 +349,10 @@ class Tensor:
             data=np.log(self._data),
             grad_fn=log_backward,
             parents=(self,),
-            requires_grad=self._requires_grad
         )
         return new_tensor
     
-    def backward(self, gradient: Optional[np.ndarray] = None):
+    def backward(self, gradient: Optional[np.ndarray] = None, clean_stale: bool = True, keep_grads: bool = False):
         """
         backward pass to compute gradients.
         
@@ -327,6 +362,9 @@ class Tensor:
         Raises:
             RuntimeError: If the tensor does not require gradients or if the gradient is not compatible.
         """
+        
+        if clean_stale:
+            Tensor.clear_stale_tensors()
         
         if not self._requires_grad:
             raise RuntimeError("Tensor does not require gradients")
@@ -339,7 +377,7 @@ class Tensor:
         topo_order: List[Tensor] = []
         visited: Set[Tensor] = set()
         
-        def build_topo(node):
+        def build_topo(node: Tensor):
             if node._id in visited or not node._requires_grad:
                 return
             visited.add(node._id)
@@ -363,22 +401,22 @@ class Tensor:
                         else:
                             parent._grad = parent._grad + grad
                 
-                if node._tensor_type == TensorType.INTERMEDIATE and node != self:     
-                    node._data = None  # Clearing data to save memory after backward pass   
+                if not keep_grads and node._tensor_type == TensorType.INTERMEDIATE and node != self:      
                     node._grad = None  # Clearing gradient to save memory after backward pass
-    
-    def zero_grad(self):
-        """Zeros out the gradients."""
-        
-        self._grad = None
-        
-        for child in (self._children or []):
-            child.zero_grad()
             
 class TensorUtils:
     @staticmethod
     def get_parameters(tensor: Tensor) -> List[Tensor]:
-        """Collect all parameter tensors in the computational graph."""
+        """
+        Collect all parameters in the computational graph starting from the given tensor.
+        
+        Args:
+            tensor: The starting tensor from which to collect parameters.
+            
+        Returns:
+            A list of Tensor objects that are parameters in the graph.
+        """
+        
         parameters = []
         visited = set()
         
@@ -398,7 +436,16 @@ class TensorUtils:
     
     @staticmethod
     def count_by_type(tensor: Tensor) -> Dict[TensorType, int]:
-        """Count tensors by type in the computational graph."""
+        """
+        Counts the number of tensors of each type in the computational graph starting from the given tensor.
+        
+        Args:
+            tensor: The starting tensor from which to count tensor types.
+            
+        Returns:
+            A dictionary with counts of each tensor type (INPUT, PARAMETER, INTERMEDIATE).
+        """
+        
         counts = {TensorType.INPUT: 0, TensorType.PARAMETER: 0, TensorType.INTERMEDIATE: 0}
         visited = set()
         
