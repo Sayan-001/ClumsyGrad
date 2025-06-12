@@ -6,13 +6,10 @@ Quick Start Guide
 Installation
 ------------
 
-Since ClumsyGrad is in development, install from source:
+To install ClumsyGrad, use pip:
+.. code-block:: shell
 
-.. code-block:: bash
-
-   git clone https://github.com/Sayan-001/ClumsyGrad.git
-   cd ClumsyGrad
-   pip install -e .
+   pip install clumsygrad
 
 Basic Usage
 -----------
@@ -168,55 +165,6 @@ Automatic Differentiation
    y.backward()
    print(f"dy/dx = {x.grad}")  # Should be [7.0] (derivative: 2x + 3 = 4 + 3 = 7)
 
-Complete Example: Linear Regression
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import numpy as np
-   from clumsygrad.tensor import Tensor
-   from clumsygrad.types import TensorType
-   from clumsygrad import loss
-   
-   # Generate synthetic data
-   np.random.seed(42)
-   X_data = np.random.randn(100, 1).astype(np.float32)
-   y_data = (2 * X_data + 1 + 0.1 * np.random.randn(100, 1)).astype(np.float32)
-   
-   # Create tensors
-   X = Tensor(X_data, tensor_type=TensorType.INPUT)
-   y_true = Tensor(y_data, tensor_type=TensorType.INPUT)
-   
-   # Initialize parameters
-   W = Tensor([[1.5]], tensor_type=TensorType.PARAMETER)  # Weight
-   b = Tensor([[0.0]], tensor_type=TensorType.PARAMETER)  # Bias
-   
-   # Training loop
-   learning_rate = 0.01
-   epochs = 100
-   
-   for epoch in range(epochs):
-       # Forward pass
-       y_pred = X @ W + b
-       
-       # Compute loss
-       loss_value = loss.mse_loss(y_pred, y_true)
-       
-       # Backward pass
-       W.grad = None  # Reset gradients
-       b.grad = None
-       loss_value.backward()
-       
-       # Update parameters
-       W._data -= learning_rate * W.grad
-       b._data -= learning_rate * b.grad
-       
-       if epoch % 20 == 0:
-           print(f"Epoch {epoch}, Loss: {loss_value.data[0]:.6f}")
-   
-   print(f"\nFinal parameters:")
-   print(f"Weight: {W.data[0][0]:.4f} (target: 2.0)")
-   print(f"Bias: {b.data[0][0]:.4f} (target: 1.0)")
 
 Key Features
 ~~~~~~~~~~~~
@@ -228,12 +176,11 @@ Key Features
 - **Loss Functions**: MSE and MAE loss functions for training
 - **Memory Efficient**: Uses weak references to manage tensor relationships
 
-Tips and Best Practices
-~~~~~~~~~~~~~~~~~~~~~~~~
+Best Practices
+~~~~~~~~~~~~~~
 
 1. **Use appropriate tensor types**: INPUT for data, PARAMETER for trainable weights
 2. **Reset gradients**: Always reset gradients before backward pass in training loops
 3. **Scalar outputs for backward()**: Call backward() only on scalar tensors (typically loss values)
-4. **Memory management**: The library uses weak references to prevent memory leaks in computational graphs
 
-For more advanced usage and API documentation, see the :doc:`api_reference` section.
+For more usage and API documentation, see the :doc:`api_reference` section.

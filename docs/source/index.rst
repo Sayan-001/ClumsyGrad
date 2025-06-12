@@ -14,13 +14,9 @@ ClumsyGrad is a lightweight automatic differentiation library built on top of Nu
 * **Tensor Operations**: Basic mathematical operations on multi-dimensional arrays
 * **Automatic Differentiation**: Forward and backward propagation for gradient computation
 * **Computational Graphs**: Building and traversing computation graphs
-* **Deep Learning Fundamentals**: Core concepts without the complexity of production frameworks
 
 Key Features
 ============
-
-* **Educational Focus**
-   Designed with clarity and learning in mind, making complex concepts accessible
 
 * **Lightweight Design**
    Minimal dependencies - built primarily on NumPy
@@ -31,8 +27,6 @@ Key Features
 * **Complete Gradient Support**
    Full automatic differentiation with computational graph tracking
 
-* **Rich Operation Set**
-   Comprehensive set of tensor operations and mathematical functions
 
 Quick Start Example
 ===================
@@ -70,29 +64,12 @@ Installation
 
 .. code-block:: bash
 
-   # Clone the repository
-   git clone https://github.com/Sayan-001/ClumsyGrad.git
-   cd ClumsyGrad
-   
-   # Install dependencies
-   pip install numpy
-   
-   # Install in development mode
-   pip install -e .
+   pip install clumsygrad
+
 
 .. note::
-   ClumsyGrad requires Python 3.8+ and NumPy. No other dependencies are needed for core functionality.
+   ClumsyGrad requires Python 3.9+ and NumPy. No other dependencies are needed for core functionality.
 
-Learning Path
-=============
-
-For the best learning experience, we recommend following this path:
-
-1. **Start with Basics** - Understand tensor creation and basic operations
-2. **Explore Operations** - Learn about mathematical and matrix operations  
-3. **Dive into Gradients** - Understand automatic differentiation
-4. **Build Neural Networks** - Combine concepts to create learning models
-5. **Advanced Topics** - Explore optimizers, loss functions, and custom operations
 
 .. toctree::
    :maxdepth: 2

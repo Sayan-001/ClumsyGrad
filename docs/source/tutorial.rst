@@ -2,7 +2,7 @@
 Tutorial
 ========
 
-This tutorial provides a comprehensive guide to using ClumsyGrad, from basic tensor operations to building complete neural networks.
+This tutorial provides a guide to using ClumsyGrad.
 
 Chapter 1: Understanding Tensors
 ================================
@@ -10,7 +10,7 @@ Chapter 1: Understanding Tensors
 What is a Tensor?
 -----------------
 
-In ClumsyGrad, a tensor is a multi-dimensional array that can track gradients for automatic differentiation.
+A tensor is a multi-dimensional array that can track gradients for automatic differentiation.
 
 .. code-block:: python
 
@@ -119,15 +119,6 @@ Chain Rule in Action
    expected_grad = 6 * 2 * (2**2 + 1)**2  # = 6 * 2 * 25 = 300
    print(f"Computed gradient: {x.grad}")
    print(f"Expected gradient: {expected_grad}")
-
-Best Practices
-==============
-
-1. **Use appropriate tensor types**: INPUT for data, PARAMETER for learnable weights
-2. **Clear gradients**: Always clear gradients before each training step
-3. **Monitor memory**: Use memory management functions for long training runs
-4. **Validate gradients**: Compare with numerical gradients during development
-5. **Start simple**: Begin with basic operations before building complex models
 
 Next Steps
 ==========
