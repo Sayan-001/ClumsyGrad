@@ -10,7 +10,7 @@ def rand(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->T
     
     Args:
         shape: The shape of the tensor to create.
-        requires_grad: Whether to track gradients for this tensor.
+        tensor_type: The type of the tensor (default is INPUT).
         
     Returns:
         A new Tensor instance with random values.
@@ -26,7 +26,7 @@ def randn(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->
     
     Args:
         shape: The shape of the tensor to create.
-        requires_grad: Whether to track gradients for this tensor.
+        tensor_type: The type of the tensor (default is INPUT).
         
     Returns:
         A new Tensor instance with random values from a normal distribution.
