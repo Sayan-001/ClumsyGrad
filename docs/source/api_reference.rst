@@ -13,8 +13,9 @@ API Reference
 
    clumsygrad.tensor
    clumsygrad.types
-   clumsygrad.grad
+   clumsygrad.random
+   clumsygrad.math
+   clumsygrad.activation
    clumsygrad.loss
    clumsygrad.optimizer
-   clumsygrad.activation
-   clumsygrad.random
+   clumsygrad.grad

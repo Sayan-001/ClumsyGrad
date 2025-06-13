@@ -71,11 +71,12 @@ Reduction Operations
 
 .. code-block:: python
 
+   from clumsygrad import math
+
    data = Tensor([[1, 2, 3], [4, 5, 6]], tensor_type=TensorType.PARAMETER)
    
-   total = data.sum()           # Sum all elements
-   row_sums = data.sum(axis=1)  # Sum along rows
-   mean_val = data.mean()       # Mean of all elements
+   total = math.sum(data, axis=0)  # Sum along columns: [5, 7, 9]
+   mean = math.mean(data, axis=1)  # Mean along rows: [2.0, 5.0]
 
 Chapter 3: Automatic Differentiation
 ====================================
