@@ -99,6 +99,7 @@ Let's compute gradients for a simple function `L = (a * b + c).sum()`:
 ```python
 from clumsygrad.tensor import Tensor
 from clumsygrad.types import TensorType
+from clumsygrad.math import sum
 import numpy as np
 
 # Define input tensors that require gradients
@@ -112,7 +113,7 @@ c = Tensor([-1.0, 2.0], tensor_type=TensorType.PARAMETER)
 # L = y.sum() => L = 12.0
 x = a * b
 y = x + c
-L = y.sum()
+L = sum(y)
 
 print(f"L = {L.data}")
 # Output: L = 12.0
