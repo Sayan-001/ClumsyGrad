@@ -7,6 +7,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.clumsygrad.tensor import Tensor, TensorUtils
 from src.clumsygrad.types import TensorType
+from src.clumsygrad.math import (
+    sum,
+    mean,
+    abs,
+    exp,
+    log,
+)
 
 class TestTensorCreation:
     """Test tensor creation and basic properties."""
@@ -176,7 +183,7 @@ class TestMathOperations:
     
     def test_sum_operation(self):
         a = Tensor([[1, 2], [3, 4]], tensor_type=TensorType.PARAMETER)
-        c = a.sum()
+        c = sum(a)
         
         expected = np.array(10, dtype=np.float32)
         np.testing.assert_array_equal(c.data, expected)
@@ -184,14 +191,14 @@ class TestMathOperations:
     
     def test_sum_with_axis(self):
         a = Tensor([[1, 2], [3, 4]], tensor_type=TensorType.PARAMETER)
-        c = a.sum(axis=0)
+        c = sum(a, axis=0)
         
         expected = np.array([4, 6], dtype=np.float32)
         np.testing.assert_array_equal(c.data, expected)
     
     def test_mean_operation(self):
         a = Tensor([[2, 4], [6, 8]], tensor_type=TensorType.PARAMETER)
-        c = a.mean()
+        c = mean(a)
         
         expected = np.array(5.0, dtype=np.float32)
         np.testing.assert_array_equal(c.data, expected)
@@ -199,21 +206,21 @@ class TestMathOperations:
     
     def test_abs_operation(self):
         a = Tensor([-1, 2, -3], tensor_type=TensorType.PARAMETER)
-        c = a.abs()
+        c = abs(a)
         
         expected = np.array([1, 2, 3], dtype=np.float32)
         np.testing.assert_array_equal(c.data, expected)
     
     def test_exp_operation(self):
         a = Tensor([0, 1, 2], tensor_type=TensorType.PARAMETER)
-        c = a.exp()
+        c = exp(a)
         
         expected = np.exp(np.array([0, 1, 2], dtype=np.float32))
         np.testing.assert_array_almost_equal(c.data, expected)
     
     def test_log_operation(self):
         a = Tensor([1, 2, 3], tensor_type=TensorType.PARAMETER)
-        c = a.log()
+        c = log(a)
         
         expected = np.log(np.array([1, 2, 3], dtype=np.float32))
         np.testing.assert_array_almost_equal(c.data, expected)
@@ -240,7 +247,7 @@ class TestBackpropagation:
         a = Tensor([2, 3], tensor_type=TensorType.PARAMETER)
         b = Tensor([4, 5], tensor_type=TensorType.PARAMETER)
         c = a + b
-        d = c.sum()
+        d = sum(c)  
         
         d.backward()
         
@@ -353,9 +360,9 @@ class TestComplexOperations:
         # z.backward()
 
         x = a * b
-        y = c_val.exp()
+        y = exp(c_val)
         u = x + y
-        z = u.log()
+        z = log(u)
         
         z.backward()
 
@@ -397,7 +404,7 @@ class TestComplexOperations:
 
         x = a - b
         y = x ** 2
-        z = y.sum()
+        z = sum(y)
         
         z.backward()
 
