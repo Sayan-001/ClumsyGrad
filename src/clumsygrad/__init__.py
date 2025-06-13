@@ -12,8 +12,10 @@ from . import types
 from . import optimizer
 from . import loss
 from . import random
+from . import math
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
+
 __all__ = [
     "tensor",
     "grad",
@@ -21,5 +23,7 @@ __all__ = [
     "types",
     "optimizer",
     "loss",
-    "random"
+    "random",
+    "math",
+    "__version__"
 ]

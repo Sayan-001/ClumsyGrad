@@ -64,6 +64,10 @@ class Tensor:
         
         for tensor in list(Tensor._global_tensor_registry.values()):
             if tensor._stale:
+                for parent in tensor._parents:
+                    parent._children.remove(tensor)
+                for child in tensor._children:
+                    child._parents = tuple(p for p in child._parents if p._id != tensor._id)
                 del Tensor._global_tensor_registry[tensor._id]
     
     def __init__(self, 
@@ -129,7 +133,7 @@ class Tensor:
         return self._grad
     
     @grad.setter
-    def grad(self, value: Optional[np.ndarray]):
+    def grad(self, value: np.ndarray):
         """Set the gradient of the tensor."""
         self._grad = value
     
@@ -248,46 +252,6 @@ class Tensor:
         )
         return new_tensor
     
-    def sum(self, axis=None, keepdims=False) -> Tensor:
-        """
-        Compute the sum of the tensor along specified axis.
-        
-        Args:
-            axis: Axis or axes along which the sum is computed. Default is None, which computes the sum of the flattened array.
-            keepdims: If True, the reduced axes are left in the result as dimensions with size one.
-            
-        Returns:
-            A new Tensor containing the sum of the input tensor.
-        """
-        
-        new_tensor = Tensor._create_node(
-            data=np.sum(self._data, axis=axis, keepdims=keepdims),
-            grad_fn=sum_backward,
-            parents=(self,),
-            extra={'axis': axis, 'keepdims': keepdims, 'input_shape': self._shape}
-        )
-        return new_tensor
-    
-    def mean(self, axis=None, keepdims=False) -> Tensor:
-        """
-        Compute the mean of the tensor along specified axis.
-        
-        Args:
-            axis: Axis or axes along which the means are computed. Default is None, which computes the mean of the flattened array.
-            keepdims: If True, the reduced axes are left in the result as dimensions with size one.
-            
-        Returns:
-            A new Tensor containing the mean of the input tensor.
-        """
-        
-        new_tensor = Tensor._create_node(
-            data=np.mean(self._data, axis=axis, keepdims=keepdims),
-            grad_fn=mean_backward,
-            parents=(self,),
-            extra={'axis': axis, 'keepdims': keepdims, 'input_shape': self._shape}
-        )
-        return new_tensor
-    
     def reshape(self, new_shape: Tuple[int, ...]) -> Tensor:
         """
         Reshape the tensor to a new shape.
@@ -312,59 +276,20 @@ class Tensor:
             extra={'original_shape': self._shape}
         )
         return new_tensor
-
-    def abs(self) -> Tensor:
-        """
-        Compute the absolute value of the tensor.
-
-        Returns:
-            A new Tensor containing the absolute values of the input tensor.
-        """
-        
-        new_tensor = Tensor._create_node(
-            data=np.abs(self._data),
-            grad_fn=abs_backward,
-            parents=(self,),
-        )
-        return new_tensor
-
-    def exp(self) -> Tensor:
-        """
-        Compute the exponential of the tensor.
-        
-        Returns:
-            A new Tensor containing the exponential values of the input tensor.
-        """
-        
-        new_tensor = Tensor._create_node(
-            data=np.exp(self._data),
-            grad_fn=exp_backward,
-            parents=(self,),
-        )
-        return new_tensor
-
-    def log(self) -> Tensor:
-        """Compute natural logarithm of tensor."""
-        new_tensor = Tensor._create_node(
-            data=np.log(self._data),
-            grad_fn=log_backward,
-            parents=(self,),
-        )
-        return new_tensor
     
-    def backward(self, gradient: Optional[np.ndarray] = None, clean_stale: bool = True, keep_grads: bool = False):
+    def backward(self, gradient: Optional[np.ndarray] = None, keep_grads: bool = False):
         """
         backward pass to compute gradients.
         
         Args:
             gradient: Optional gradient to start the backward pass. If None, it assumes a scalar output and uses ones.
+            keep_grads: If True, keeps gradients for all nodes in the graph. If False, clears gradients for intermediate nodes.
             
         Raises:
             RuntimeError: If the tensor does not require gradients or if the gradient is not compatible.
         """
         
-        if clean_stale:
-            Tensor.clear_stale_tensors()
+        Tensor.clear_stale_tensors()
         
         if not self._requires_grad:
             raise RuntimeError("Tensor does not require gradients")
@@ -400,9 +325,11 @@ class Tensor:
                             parent._grad = grad
                         else:
                             parent._grad = parent._grad + grad
-                
+            
+                # If the node is an intermediate node and we are not keeping gradients,
+                # we clear its gradient to save memory.
                 if not keep_grads and node._tensor_type == TensorType.INTERMEDIATE and node != self:      
-                    node._grad = None  # Clearing gradient to save memory after backward pass
+                    node._grad = None
             
 class TensorUtils:
     @staticmethod

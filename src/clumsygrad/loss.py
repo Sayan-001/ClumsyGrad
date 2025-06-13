@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from .tensor import Tensor
 from .grad import mse_backward, mae_backward
+from .math import mean, abs
 
 def mse_loss(pred: Tensor, target: Tensor) -> Tensor:
     """
@@ -23,9 +24,9 @@ def mse_loss(pred: Tensor, target: Tensor) -> Tensor:
         raise ValueError("Predicted and target tensors must have the same shape for MSE loss.")
     
     diff = pred - target
-    mse = (diff * diff).mean()
+    mse = mean(diff * diff)
     
-    return Tensor._create_node(mse._data, grad_fn=mse_backward, parents=(pred, target))
+    return mse
     
 def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
     """
@@ -43,6 +44,6 @@ def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
         raise ValueError("Predicted and target tensors must have the same shape for MAE loss.")
     
     diff = pred - target
-    mae = diff.abs().mean()
+    mae = mean(abs(diff))
     
-    return Tensor._create_node(mae._data, grad_fn=mae_backward, parents=(pred, target))
+    return mae
