@@ -6,6 +6,15 @@ ClumsyGrad
 
 **A Simple Automatic Differentiation Library for Educational Purposes**
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+   :numbered:
+
+   quickstart
+   tutorial
+   api_reference
+
 Overview
 ========
 
@@ -62,54 +71,21 @@ Here's a simple example demonstrating ClumsyGrad's capabilities:
 Installation
 ============
 
+To install ClumsyGrad, you can use pip:
+
 .. code-block:: bash
 
    pip install clumsygrad
 
 
 .. note::
-   ClumsyGrad requires Python 3.9+ and NumPy. No other dependencies are needed for core functionality.
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   :numbered:
-
-   quickstart
-   tutorial
-   api_reference
-
-API Reference
-=============
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Documentation:
-
-   clumsygrad.tensor
-   clumsygrad.types
-   clumsygrad.grad
-   clumsygrad.loss
-   clumsygrad.optimizer
-   clumsygrad.activation
-   clumsygrad.random
+   ClumsyGrad requires Python 3.9+ and NumPy.
 
 Performance Notes
 =================
 
 .. warning::
-   ClumsyGrad is designed for educational purposes. For production workloads, 
-   consider using established frameworks like PyTorch or TensorFlow.
-
-* **Memory Management**
-   The library uses weak references to prevent memory leaks in computational graphs.
-
-* **Computational Efficiency** 
-   Operations are implemented using NumPy for reasonable performance on CPU.
-
-* **Gradient Computation**
-   Automatic differentiation is implemented using reverse-mode (backpropagation).
+   ClumsyGrad is mainly designed by me for educational purposes, and may not be completely optimzed for performance.
 
 Contributing
 ============
@@ -124,7 +100,7 @@ ClumsyGrad welcomes contributions! Whether you're:
 Acknowledgments
 ===============
 
-* Inspired by PyTorch and other automatic differentiation frameworks.
+* Inspired by PyTorch (obviously!) and other automatic differentiation frameworks.
 
 Indices and Tables
 ==================

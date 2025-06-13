@@ -20,10 +20,6 @@ A tensor is a multi-dimensional array that can track gradients for automatic dif
    # Creating different types of tensors
    input_tensor = Tensor([1, 2, 3], tensor_type=TensorType.INPUT)
    parameter_tensor = Tensor([0.5, -0.3, 0.8], tensor_type=TensorType.PARAMETER)
-   
-   print(f"Input tensor: {input_tensor}")
-   print(f"Parameter tensor: {parameter_tensor}")
-   print(f"Requires grad: {parameter_tensor.requires_grad}")
 
 Tensor Types
 ------------

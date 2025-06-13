@@ -7,6 +7,7 @@ Installation
 ------------
 
 To install ClumsyGrad, use pip:
+
 .. code-block:: shell
 
    pip install clumsygrad
@@ -19,7 +20,6 @@ Creating Tensors
 
 .. code-block:: python
 
-   import numpy as np
    from clumsygrad.tensor import Tensor
    from clumsygrad.types import TensorType
    from clumsygrad import random
@@ -33,30 +33,9 @@ Creating Tensors
    w = Tensor([[0.5, 1.5]], tensor_type=TensorType.PARAMETER)
    print(f"w requires_grad: {w.requires_grad}")  # True for PARAMETER type
    
-   # Create from numpy array
-   y = Tensor(np.array([[3.0, 4.0]]), tensor_type=TensorType.PARAMETER)
-   
    # Random tensors
    z1 = random.rand((2, 3))  # Uniform random [0, 1)
-   z2 = random.randn((2, 3))  # Normal distribution
 
-Tensor Types
-~~~~~~~~~~~~
-
-ClumsyGrad supports three tensor types:
-
-.. code-block:: python
-
-   from clumsygrad.types import TensorType
-   
-   # INPUT: For data (requires_grad=False by default)
-   data = Tensor([[1, 2, 3]], tensor_type=TensorType.INPUT)
-   
-   # PARAMETER: For trainable parameters (requires_grad=True by default)
-   weights = Tensor([[0.1, 0.2]], tensor_type=TensorType.PARAMETER)
-   
-   # INTERMEDIATE: Created automatically during operations
-   # (Not recommended for manual creation)
 
 Basic Operations
 ~~~~~~~~~~~~~~~~
@@ -84,71 +63,6 @@ Basic Operations
    # Transpose
    transposed = x.T()
 
-Advanced Tensor Operations
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   # Mathematical functions
-   data = Tensor([[-1.0, 2.0, -3.0]])
-   
-   abs_result = data.abs()           # Absolute value
-   exp_result = data.exp()           # Exponential
-   log_result = data.abs().log()     # Natural logarithm (applied to abs for positive values)
-   
-   # Reduction operations
-   matrix = Tensor([[1.0, 2.0], [3.0, 4.0]])
-   
-   sum_all = matrix.sum()                    # Sum all elements
-   sum_axis0 = matrix.sum(axis=0)           # Sum along axis 0
-   mean_all = matrix.mean()                 # Mean of all elements
-   mean_axis1 = matrix.mean(axis=1)         # Mean along axis 1
-   
-   # Shape operations
-   vector = Tensor([1, 2, 3, 4, 5, 6])
-   reshaped = vector.reshape((2, 3))        # Reshape to 2x3 matrix
-
-Activation Functions
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from clumsygrad import activations
-   
-   # Create input tensor
-   x = Tensor([[-2.0, -1.0, 0.0, 1.0, 2.0]])
-   
-   # Apply activation functions
-   relu_out = activations.relu(x)        # ReLU activation
-   sigmoid_out = activations.sigmoid(x)  # Sigmoid activation
-   tanh_out = activations.tanh(x)        # Tanh activation
-   
-   # Softmax (useful for classification)
-   logits = Tensor([[1.0, 2.0, 3.0]])
-   softmax_out = activations.softmax(logits, axis=-1)
-   
-   print(f"Softmax output: {softmax_out.data}")
-   print(f"Sum of softmax: {softmax_out.sum().data}")  # Should be close to 1.0
-
-Loss Functions
-~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from clumsygrad import loss
-   
-   # Create predictions and targets
-   predictions = Tensor([[0.8, 0.2, 0.9]])
-   targets = Tensor([[1.0, 0.0, 1.0]], tensor_type=TensorType.INPUT)
-   
-   # Mean Squared Error loss
-   mse = loss.mse_loss(predictions, targets)
-   print(f"MSE Loss: {mse.data}")
-   
-   # Mean Absolute Error loss
-   mae = loss.mae_loss(predictions, targets)
-   print(f"MAE Loss: {mae.data}")
-
 Automatic Differentiation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -164,17 +78,6 @@ Automatic Differentiation
    # Backward pass
    y.backward()
    print(f"dy/dx = {x.grad}")  # Should be [7.0] (derivative: 2x + 3 = 4 + 3 = 7)
-
-
-Key Features
-~~~~~~~~~~~~
-
-- **Automatic Differentiation**: ClumsyGrad automatically computes gradients through the computational graph
-- **Tensor Types**: INPUT (data), PARAMETER (trainable), INTERMEDIATE (computed)
-- **Flexible Operations**: Support for various mathematical operations and tensor manipulations
-- **Activation Functions**: Built-in support for common activation functions
-- **Loss Functions**: MSE and MAE loss functions for training
-- **Memory Efficient**: Uses weak references to manage tensor relationships
 
 Best Practices
 ~~~~~~~~~~~~~~
