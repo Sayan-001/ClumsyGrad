@@ -87,8 +87,9 @@ print(f"mat_a @ mat_b = \n{mat_c.data}")
 For the function `L = sum(a * b + c)`. The gradient of L wrt. a, b and c is calculated as:
 
 ```python
-from clumsygrad.tensor import Tensor, TensorType
-from clumsygrad.math import sum
+from clumsygrad.tensor import Tensor
+from clumsygrad.types import TensorType
+import numpy as np
 
 # Define input tensors that require gradients
 a = Tensor([2.0, 3.0], tensor_type=TensorType.PARAMETER)
