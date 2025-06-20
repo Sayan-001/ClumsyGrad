@@ -3,7 +3,9 @@ This module contains common optimizers for optimizing parameters in a computatio
 """
 
 from typing import List
+
 from .tensor import Tensor, TensorType
+
 
 class SGD:
     """

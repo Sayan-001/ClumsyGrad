@@ -1,8 +1,9 @@
 from typing import Tuple
+
 import numpy as np
 
-from .tensor import Tensor
-from .types import TensorType
+from .tensor import Tensor, TensorType
+
 
 def rand(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->Tensor:
     """
@@ -14,6 +15,11 @@ def rand(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->T
         
     Returns:
         A new Tensor instance with random values.
+        
+    Example:
+        >>> import clumsygrad as cg
+        >>> tensor = cg.random.rand((2, 3), tensor_type=cg.TensorType.PARAMETER)
+        >>> print(tensor)
         
     """
     
@@ -30,6 +36,11 @@ def randn(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->
         
     Returns:
         A new Tensor instance with random values from a normal distribution.
+        
+    Example:
+        >>> import clumsygrad as cg
+        >>> tensor = cg.random.randn((2, 3), tensor_type=cg.TensorType.PARAMETER)
+        >>> print(tensor)
         
     """
     

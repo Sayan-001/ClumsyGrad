@@ -13,8 +13,10 @@ Returns:
 """
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Tuple
+
 import numpy as np
-from typing import Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .tensor import Tensor

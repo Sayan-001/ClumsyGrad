@@ -3,32 +3,20 @@ import numpy as np
 import sys
 import os
 
-# Add project root to sys.path to allow importing clumsygrad
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.clumsygrad.tensor import Tensor
-from src.clumsygrad.types import TensorType
+from src.clumsygrad.tensor import Tensor, TensorType
 import src.clumsygrad.grad as grad_module
 from src.clumsygrad.math import (
-    sum as cg_sum,  # Renamed to avoid conflict with Python's sum
-    mean as cg_mean,
-    abs as cg_abs,
-    exp as cg_exp,
-    log as cg_log,
-    sqrt as cg_sqrt,
-    sin as cg_sin,
-    cos as cg_cos,
-    tan as cg_tan,
-)
-from src.clumsygrad.activation import (
-    relu as cg_relu,
-    sigmoid as cg_sigmoid,
-    tanh as cg_tanh,
-    softmax as cg_softmax,
-)
-from src.clumsygrad.loss import (
-    mse_loss as cg_mse_loss,
-    mae_loss as cg_mae_loss,
+    sum,
+    mean,
+    abs,
+    exp,
+    log,
+    sqrt,
+    sin,
+    cos,
+    tan,
 )
 
 
@@ -159,7 +147,7 @@ class TestElementaryGradFunctions:
     def test_abs_backward(self):
         x_data = np.array([-1., 0., 3.])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_abs(x) # Forward pass
+        child_tensor = abs(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
         
         grad_x_tuple = grad_module.abs_backward(child_tensor, incoming_grad)
@@ -186,7 +174,7 @@ class TestReductionGradFunctions:
     def test_sum_backward_no_axis(self):
         x_data = np.array([[1., 2.], [3., 4.]])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_sum(x) # Forward pass
+        child_tensor = sum(x) # Forward pass
         incoming_grad = np.array(0.5) # Scalar gradient
         
         grad_x_tuple = grad_module.sum_backward(child_tensor, incoming_grad)
@@ -197,7 +185,7 @@ class TestReductionGradFunctions:
     def test_sum_backward_with_axis_keepdims_false(self):
         x_data = np.array([[1., 2., 3.], [4., 5., 6.]])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_sum(x, axis=0, keepdims=False) # Forward pass
+        child_tensor = sum(x, axis=0, keepdims=False) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
         
         grad_x_tuple = grad_module.sum_backward(child_tensor, incoming_grad)
@@ -211,7 +199,7 @@ class TestReductionGradFunctions:
     def test_sum_backward_with_axis_keepdims_true(self):
         x_data = np.array([[1., 2., 3.], [4., 5., 6.]])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_sum(x, axis=1, keepdims=True) # Forward pass (shape (2,1))
+        child_tensor = sum(x, axis=1, keepdims=True) # Forward pass (shape (2,1))
         incoming_grad = np.array([[0.1], [0.2]])
         
         grad_x_tuple = grad_module.sum_backward(child_tensor, incoming_grad)
@@ -222,7 +210,7 @@ class TestReductionGradFunctions:
     def test_mean_backward_no_axis(self):
         x_data = np.array([[1., 2.], [3., 4.]]) # size = 4
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_mean(x) # Forward pass
+        child_tensor = mean(x) # Forward pass
         incoming_grad = np.array(0.5) # Scalar gradient
         
         grad_x_tuple = grad_module.mean_backward(child_tensor, incoming_grad)
@@ -234,7 +222,7 @@ class TestReductionGradFunctions:
     def test_mean_backward_with_axis_keepdims_false(self):
         x_data = np.array([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]) # axis=0, n=3 for each column
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_mean(x, axis=0, keepdims=False) # Forward pass, shape (3,)
+        child_tensor = mean(x, axis=0, keepdims=False) # Forward pass, shape (3,)
         incoming_grad = np.array([0.1, 0.2, 0.3])
         
         grad_x_tuple = grad_module.mean_backward(child_tensor, incoming_grad)
@@ -254,7 +242,7 @@ class TestMathOpGradFunctions:
     def test_exp_backward(self):
         x_data = np.array([0., 1., -1.])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_exp(x) # Forward pass
+        child_tensor = exp(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
         
         grad_x_tuple = grad_module.exp_backward(child_tensor, incoming_grad)
@@ -265,7 +253,7 @@ class TestMathOpGradFunctions:
     def test_log_backward(self):
         x_data = np.array([1., 2., 3.]) # log requires positive values
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_log(x) # Forward pass
+        child_tensor = log(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
         
         grad_x_tuple = grad_module.log_backward(child_tensor, incoming_grad)
@@ -276,7 +264,7 @@ class TestMathOpGradFunctions:
     def test_sqrt_backward(self):
         x_data = np.array([1., 4., 9.])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_sqrt(x) # Forward pass
+        child_tensor = sqrt(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
 
         grad_x_tuple = grad_module.sqrt_backward(child_tensor, incoming_grad)
@@ -286,7 +274,7 @@ class TestMathOpGradFunctions:
     def test_sin_backward(self):
         x_data = np.array([0., np.pi/2, np.pi])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_sin(x) # Forward pass
+        child_tensor = sin(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
 
         grad_x_tuple = grad_module.sin_backward(child_tensor, incoming_grad)
@@ -296,7 +284,7 @@ class TestMathOpGradFunctions:
     def test_cos_backward(self):
         x_data = np.array([0., np.pi/2, np.pi])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_cos(x) # Forward pass
+        child_tensor = cos(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
 
         grad_x_tuple = grad_module.cos_backward(child_tensor, incoming_grad)
@@ -306,7 +294,7 @@ class TestMathOpGradFunctions:
     def test_tan_backward(self):
         x_data = np.array([0., np.pi/4, -np.pi/4])
         x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
-        child_tensor = cg_tan(x) # Forward pass
+        child_tensor = tan(x) # Forward pass
         incoming_grad = np.array([0.1, 0.2, 0.3])
 
         grad_x_tuple = grad_module.tan_backward(child_tensor, incoming_grad)

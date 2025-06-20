@@ -4,18 +4,11 @@ This module provides basic mathematical operations.
 
 import numpy as np
 
+from .grad import (abs_backward, cos_backward, exp_backward, log_backward,
+                   mean_backward, sin_backward, sqrt_backward, sum_backward,
+                   tan_backward)
 from .tensor import Tensor
-from .grad import (
-    sum_backward,
-    mean_backward,
-    abs_backward,
-    sqrt_backward,
-    exp_backward,
-    log_backward,
-    sin_backward,
-    cos_backward,
-    tan_backward,
-)
+
 
 def sum(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
     """
@@ -62,12 +55,6 @@ def mean(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
 def abs(tensor: Tensor) -> Tensor:
     """
     Compute the absolute value of the tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the absolute value of.
-
-    Returns:
-        A new Tensor containing the absolute values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(
@@ -80,12 +67,6 @@ def abs(tensor: Tensor) -> Tensor:
 def sqrt(tensor: Tensor) -> Tensor:
     """
     Compute the square root of the tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the square root of.
-        
-    Returns:
-        A new Tensor containing the square root values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(
@@ -98,12 +79,6 @@ def sqrt(tensor: Tensor) -> Tensor:
 def exp(tensor: Tensor) -> Tensor:
     """
     Compute the exponential of the tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the exponential of.
-    
-    Returns:
-        A new Tensor containing the exponential values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(
@@ -116,12 +91,6 @@ def exp(tensor: Tensor) -> Tensor:
 def log(tensor: Tensor) -> Tensor:
     """
     Compute the natural logarithm of the tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the logarithm of.   
-        
-    Returns:
-        A new Tensor containing the natural logarithm values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(
@@ -134,12 +103,6 @@ def log(tensor: Tensor) -> Tensor:
 def sin(tensor: Tensor) -> Tensor:
     """
     Compute the sine of the tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the sine of.
-        
-    Returns:
-        A new Tensor containing the sine values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(
@@ -152,12 +115,6 @@ def sin(tensor: Tensor) -> Tensor:
 def cos(tensor: Tensor) -> Tensor:
     """
     Compute cosine of tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the cosine of.
-        
-    Returns:
-        A new Tensor containing the cosine values of the input tensor.  
     """
     
     new_tensor = Tensor._create_node(
@@ -170,12 +127,6 @@ def cos(tensor: Tensor) -> Tensor:
 def tan(tensor: Tensor) -> Tensor:
     """
     Compute tangent of tensor.
-    
-    Args:
-        tensor: The input Tensor to compute the tangent of.
-        
-    Returns:
-        A new Tensor containing the tangent values of the input tensor.
     """
     
     new_tensor = Tensor._create_node(

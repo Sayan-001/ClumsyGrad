@@ -5,8 +5,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.clumsygrad.tensor import Tensor, TensorUtils
-from src.clumsygrad.types import TensorType
+from src.clumsygrad.tensor import Tensor, TensorUtils, TensorType
 from src.clumsygrad.math import (
     sum,
     mean,

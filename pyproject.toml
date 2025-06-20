@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 
 [project]
 name = "clumsygrad"
-version = "0.0.3"
+version = "0.1.0"
 authors = [
   { name="Sayan Gupta", email="sayangupta540@gmail.com" },
 ]

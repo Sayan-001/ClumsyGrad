@@ -1,26 +1,18 @@
 """
-ClumsyGrad: A simple automatic differentiation library built on top of NumPy.
+A simple automatic differentiation library built on top of NumPy. 
+It provides a `Tensor` class with support for building dynamic computation graphs.
 
-This library provides a basic tensor class with support for gradient tracking, building computational graphs,
-and performing backpropagation through various tensor operations.
+For detailed documentation, refer: `https://clumsygrad.readthedocs.io/en/latest/` 
 """
 
-from . import tensor
-from . import grad
-from . import activation
-from . import types
-from . import optimizer
-from . import loss
-from . import random
-from . import math
+from . import activation, grad, loss, math, optimizer, random, tensor
 
-__version__ = "0.0.3"
+__version__ = "0.1.0"
 
 __all__ = [
     "tensor",
     "grad",
     "activation",
-    "types",
     "optimizer",
     "loss",
     "random",

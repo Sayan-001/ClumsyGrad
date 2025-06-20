@@ -5,35 +5,81 @@ It also contains some utility functions for managing tensors and their gradients
 """
 
 from __future__ import annotations
-import numpy as np
-from typing import Dict, Set, Union, List, Tuple, Optional, Callable
+
 import weakref
+from enum import IntEnum
+from typing import Callable, Dict, List, Optional, Set, Tuple, Union
+
+import numpy as np
 
 from .grad import *
-from .types import TensorType
+
+
+class TensorType(IntEnum):
+    """
+    Defines tensor types in the computational graph.
+    
+    Each type controls gradient computation and tensor behavior:
+    
+    Examples:
+        >>> # Create different tensor types
+        >>> input_tensor = Tensor([1, 2, 3], tensor_type=TensorType.INPUT)
+        >>> param_tensor = Tensor([0.5, 0.3], tensor_type=TensorType.PARAMETER)
+        >>> # INTERMEDIATE tensors are created automatically during operations
+        >>> result = input_tensor + param_tensor  # Creates INTERMEDIATE tensor
+    """
+    
+    INPUT = 0
+    """
+    Input tensor that feeds data into the computation graph.
+    
+    - Does not require gradients by default
+    - Used for model inputs, data, and constants
+    - Cannot be optimized during training
+    """
+    
+    PARAMETER = 1
+    """
+    Trainable parameter tensor (weights, biases).
+    
+    - Requires gradients for backpropagation
+    - Updated during optimization
+    - Tracked in parameter collections
+    """
+    
+    INTERMEDIATE = 2
+    """
+    Intermediate computation result.
+    
+    - Created automatically during tensor operations
+    - Requires gradients if parents require gradients
+    - Memory can be freed after backward pass
+    """
 
 class Tensor:
     """
-    A tensor class for automatic differentiation.
-    This class supports basic tensor operations and tracks gradients.
-    It is used to build computational graphs for backpropagation.
+    The main Tensor class, comprising the core functionality for creation and manipulation of tensors in the computational graph.
     """
     
     _global_tensor_registry = weakref.WeakValueDictionary()
     _id_counter = 0
     
-    __slots__ = ('_data', '_shape', '_id', '_grad_fn',
-                 '_grad', '_children', '_parents', '_stale',
+    __slots__ = ('_data', '_shape', '_id', '_grad_fn', '_grad', '_children', '_parents', '_stale',
                  '_extra', '_version', '_tensor_type', '_requires_grad', '__weakref__')
     
+    _FIELD_DOCS = {
+        "_data": "The data of the tensor, stored as a numpy array.",
+    }
+    
     @staticmethod
-    def _create_node(data: np.ndarray, 
+    def _create_node(data: Union[np.ndarray, list, float],
                      grad_fn: Optional[Callable], 
                      parents: Tuple[Tensor, ...],
                      extra: Optional[dict] = None) -> Tensor:
         
         """
         Creates a new tensor node in the computational graph.
+        By default, this node is created as an INTERMEDIATE tensor.
         
         Args:
             data: The data for the new tensor.
@@ -71,7 +117,7 @@ class Tensor:
                 del Tensor._global_tensor_registry[tensor._id]
     
     def __init__(self, 
-                 data,
+                 data: Union[np.ndarray, list, float],
                  tensor_type: TensorType = TensorType.INPUT,
                 ):
         """
@@ -79,13 +125,14 @@ class Tensor:
         
         Args:
             data: The initial data for the tensor.
-            tensor_type: The type of the tensor, as TensorType.INPUT/PARAMETER/INTERMEDIATE.
+            tensor_type (TensorType): The type of the tensor, as TensorType.INPUT/PARAMETER/INTERMEDIATE (default is INPUT).
             
         Note: 
             The tensor will not track/propagate gradients if it is of type INPUT.
             If it is of type PARAMETER, it will be treated as a trainable parameter.
             Using INTERMEDIATE tensor type is nuanced and not recommended 
             unless you are explicitly creating a node in the graph.
+            By default, data type is set to float32.
         """
         
         self._data = np.array(data, dtype=np.float32)
@@ -143,7 +190,13 @@ class Tensor:
         return self._requires_grad
     
     def T(self) -> Tensor:
-        """Returns a transpose of the tensor."""
+        """
+        Returns the transpose of the tensor.
+        
+        Note:
+            Double transposing a tensor returns the original tensor node,
+            and creates a new stale tensor, which needs to be cleared if required.
+        """
         new_tensor = None
         
         if (self._grad_fn == transpose_backward and len(self._parents) == 1):
@@ -178,6 +231,9 @@ class Tensor:
         
         return new_tensor
     
+    def __radd__(self, other: Union[Tensor, float]) -> Tensor:
+        return self.__add__(other)
+    
     def __sub__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
             if self._shape != other._shape:
@@ -198,6 +254,9 @@ class Tensor:
         
         return new_tensor
     
+    def __rsub__(self, other: Union[Tensor, float]) -> Tensor:
+        return self.__sub__(other)
+    
     def __mul__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
             if self._shape != other._shape:
@@ -217,6 +276,9 @@ class Tensor:
             )
         
         return new_tensor
+    
+    def __rmul__(self, other: Union[Tensor, float]) -> Tensor:
+        return self.__mul__(other)
     
     def __matmul__(self, other: Tensor) -> Tensor:
         if not isinstance(other, Tensor):
@@ -277,7 +339,7 @@ class Tensor:
         )
         return new_tensor
     
-    def backward(self, gradient: Optional[np.ndarray] = None, keep_grads: bool = False):
+    def backward(self, gradient: Optional[np.ndarray | float] = None, keep_grads: bool = False):
         """
         backward pass to compute gradients.
         
@@ -287,6 +349,16 @@ class Tensor:
             
         Raises:
             RuntimeError: If the tensor does not require gradients or if the gradient is not compatible.
+            
+        Note:
+            This method clears stale tensors before starting the backward pass.
+            It builds a reverse topological order of the computational graph,
+            starting from the current tensor, and computes gradients for each node.
+            
+        Example:
+            >>> t = Tensor(np.array([1.0, 2.0, 3.0]), tensor_type=TensorType.PARAMETER)
+            >>> y = t ** 2 + 3 * t + 2
+            >>> y.backward()
         """
         
         Tensor.clear_stale_tensors()
