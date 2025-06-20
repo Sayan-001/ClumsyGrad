@@ -12,7 +12,6 @@ API Reference
    :caption: API Documentation:
 
    clumsygrad.tensor
-   clumsygrad.types
    clumsygrad.random
    clumsygrad.math
    clumsygrad.activation

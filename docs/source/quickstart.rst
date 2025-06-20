@@ -18,11 +18,13 @@ Basic Usage
 Creating Tensors
 ~~~~~~~~~~~~~~~~
 
+Tensors can be created from lists or NumPy arrays, and you can specify the type of tensor (INPUT or PARAMETER).
+INPUT tensors do not store gradients, while PARAMETER tensors do.
+
 .. code-block:: python
 
-   from clumsygrad.tensor import Tensor
-   from clumsygrad.types import TensorType
-   from clumsygrad import random
+   from clumsygrad.tensor import Tensor, TensorType
+   from clumsygrad.random import randn
    
    # Create a tensor from a list (INPUT type by default)
    x = Tensor([[1.0, 2.0]])
@@ -34,11 +36,12 @@ Creating Tensors
    print(f"w requires_grad: {w.requires_grad}")  # True for PARAMETER type
    
    # Random tensors
-   z1 = random.rand((2, 3))  # Uniform random [0, 1)
-
+   z1 = randn((4, 5), tensor_type=TensorType.PARAMETER)  # Uniform random [0, 1)
 
 Basic Operations
 ~~~~~~~~~~~~~~~~
+
+Tensors support various arithmetic operations, including addition, subtraction, multiplication, and matrix multiplication.
 
 .. code-block:: python
 
@@ -65,6 +68,9 @@ Basic Operations
 
 Automatic Differentiation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Automatic Differentiation (AD) works by decomposing a function into a sequence of elementary operations 
+and applying the chain rule locally at each step.
 
 .. code-block:: python
 

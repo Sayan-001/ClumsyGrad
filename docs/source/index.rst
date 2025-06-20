@@ -4,7 +4,7 @@
 ClumsyGrad
 ==========
 
-**A Simple Automatic Differentiation Library for Educational Purposes**
+**A Simple Automatic Differentiation Library built on top of NumPy**
 
 .. toctree::
    :maxdepth: 2
@@ -15,37 +15,21 @@ ClumsyGrad
    tutorial
    api_reference
 
-Overview
-========
-
-ClumsyGrad is a lightweight automatic differentiation library built on top of NumPy, designed specifically for educational purposes. It provides a simple yet powerful framework for understanding the fundamentals of:
-
-* **Tensor Operations**: Basic mathematical operations on multi-dimensional arrays
-* **Automatic Differentiation**: Forward and backward propagation for gradient computation
-* **Computational Graphs**: Building and traversing computation graphs
-
 Key Features
 ============
 
 * **Lightweight Design**
    Minimal dependencies - built primarily on NumPy
 
-* **Extensible Architecture**
+* **Minimalist Architecture**
    Easy to understand and modify for experimentation
-
-* **Complete Gradient Support**
-   Full automatic differentiation with computational graph tracking
-
 
 Quick Start Example
 ===================
 
-Here's a simple example demonstrating ClumsyGrad's capabilities:
-
 .. code-block:: python
 
-   from clumsygrad.tensor import Tensor
-   from clumsygrad.types import TensorType
+   from clumsygrad.tensor import Tensor, TensorType
    from clumsygrad.loss import mse_loss
    
    # Create tensors with gradient tracking
@@ -101,10 +85,3 @@ Acknowledgments
 ===============
 
 * Inspired by PyTorch (obviously!) and other automatic differentiation frameworks.
-
-Indices and Tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

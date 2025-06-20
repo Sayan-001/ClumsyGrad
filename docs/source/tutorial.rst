@@ -14,8 +14,7 @@ A tensor is a multi-dimensional array that can track gradients for automatic dif
 
 .. code-block:: python
 
-   from clumsygrad.tensor import Tensor
-   from clumsygrad.types import TensorType
+   from clumsygrad.tensor import Tensor, TensorType
    
    # Creating different types of tensors
    input_tensor = Tensor([1, 2, 3], tensor_type=TensorType.INPUT)
@@ -88,7 +87,7 @@ Gradients tell us how the output changes with respect to inputs.
 
 .. code-block:: python
 
-   # Simple function: f(x) = x^2
+   # f(x) = x^2
    x = Tensor([3.0], tensor_type=TensorType.PARAMETER)
    y = x ** 2
    
@@ -96,8 +95,8 @@ Gradients tell us how the output changes with respect to inputs.
    y.backward()
    print(f"x = {x.data}, gradient = {x.grad}")  # Should be 6.0
 
-Chain Rule in Action
---------------------
+Chain Rule
+----------
 
 .. code-block:: python
 
@@ -117,7 +116,7 @@ Chain Rule in Action
    print(f"Computed gradient: {x.grad}")
    print(f"Expected gradient: {expected_grad}")
 
-Next Steps
+Carry On
 ==========
 
 * Explore the :doc:`api_reference` for detailed function documentation
