@@ -1,23 +1,14 @@
-import pytest
-import numpy as np
-import sys
 import os
+import sys
+
+import numpy as np
+import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.clumsygrad.tensor import Tensor, TensorType
 import src.clumsygrad.grad as grad_module
-from src.clumsygrad.math import (
-    sum,
-    mean,
-    abs,
-    exp,
-    log,
-    sqrt,
-    sin,
-    cos,
-    tan,
-)
+from src.clumsygrad.math import abs, cos, exp, log, mean, sin, sqrt, sum, tan
+from src.clumsygrad.tensor import Tensor, TensorType
 
 
 class TestElementaryGradFunctions:

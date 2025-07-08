@@ -1,18 +1,16 @@
-import pytest
-import numpy as np
-import sys
+import gc
 import os
+import random
+import sys
+
+import numpy as np
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.clumsygrad.tensor import Tensor, TensorUtils, TensorType
-from src.clumsygrad.math import (
-    sum,
-    mean,
-    abs,
-    exp,
-    log,
-)
+from src.clumsygrad.math import abs, cos, exp, log, mean, sin, sum, tan
+from src.clumsygrad.tensor import Tensor, TensorType, TensorUtils
+
 
 class TestTensorCreation:
     """Test tensor creation and basic properties."""
@@ -238,7 +236,6 @@ class TestMathOperations:
         with pytest.raises(ValueError, match="New shape must have the same number of elements"):
             a.reshape((2, 3))
 
-
 class TestBackpropagation:
     """Test backward propagation."""
     
@@ -305,6 +302,57 @@ class TestTensorUtils:
 
 class TestComplexOperations:
     """Test complex operation chains."""
+    testing_values = [0.617, 0.591, 0.505, 0.956, 0.047, 0.128, 0.144, 0.452, 0.53, 0.74]
+
+    def test_complex_expression1(self):
+        for value in self.testing_values:
+            x = Tensor(random.random(), tensor_type=TensorType.PARAMETER)
+            
+            y = (x**2 + sin(x))*exp(cos(x))
+            deriv_y = (2*x + cos(x))*exp(cos(x)) - (x**2 + sin(x))*exp(cos(x))*sin(x)
+            y.backward()
+            
+            np.testing.assert_array_almost_equal(x.grad, deriv_y.data, decimal=3)
+        
+    def test_complex_expression2(self):
+        for value in self.testing_values:
+            x = Tensor(value, tensor_type=TensorType.PARAMETER)
+            
+            y = log(x**3 + tan(x)) * cos(exp(x))
+            deriv_y = ((3 * x**2 + (cos(x)**-1)**2) * cos(exp(x))) * (x**3 + tan(x))**-1 - exp(x) * sin(exp(x)) * log(x**3 + tan(x))
+            y.backward()
+            
+            np.testing.assert_array_almost_equal(x.grad, deriv_y.data, decimal=3)
+    
+    def test_complex_expression3(self):
+        for value in self.testing_values:
+            x = Tensor(value, tensor_type=TensorType.PARAMETER)
+            
+            y = (exp(2 * x) + sin(3 * x)) * (log(x) + cos(x**2))**-1
+            deriv_y = ((2 * exp(2 * x) + 3 * cos(3 * x)) * (log(x) + cos(x**2)) - (exp(2 * x) + sin(3 * x)) * (x**-1 - 2 * x * sin(x**2))) * (log(x) + cos(x**2))**-2
+            y.backward()
+            
+            np.testing.assert_array_almost_equal(x.grad, deriv_y.data, decimal=3)
+    
+    def test_complex_expression4(self):
+        for value in self.testing_values:
+            x = Tensor(value, tensor_type=TensorType.PARAMETER)
+            
+            y = (cos(4 * x) + log(x**2 + 1))**3
+            deriv_y = 3 * (cos(4 * x) + log(x**2 + 1))**2 * (-4 * sin(4 * x) + (2 * x) * (x**2 + 1)**-1)
+            y.backward()
+            
+            np.testing.assert_array_almost_equal(x.grad, deriv_y.data, decimal=3)
+    
+    def test_complex_expression5(self):
+        for value in self.testing_values:
+            x = Tensor(value, tensor_type=TensorType.PARAMETER)
+            
+            y = x * tan(x**0.5) - exp(sin(5 * x))
+            deriv_y = tan(x**0.5) + 0.5 * x**0.5 * (cos(x**0.5))**-2 - 5 * cos(5 * x) * exp(sin(5 * x))
+            y.backward()
+            
+            np.testing.assert_array_almost_equal(x.grad, deriv_y.data, decimal=3)
     
     def test_complex_forward_pass(self):
         # Test: (a * b + c) @ d
@@ -321,107 +369,6 @@ class TestComplexOperations:
         # (a * b + c) @ d = [[8*7 + 14*8]] = [[56 + 112]] = [[168]]
         expected = np.array([[168]], dtype=np.float32)
         np.testing.assert_array_equal(result.data, expected)
-    
-    def test_complex_backward_pass(self):
-        a = Tensor([2.0], tensor_type=TensorType.PARAMETER)
-        b = Tensor([3.0], tensor_type=TensorType.PARAMETER)
-        
-        # f(a, b) = (a * b) ** 2
-        c = a * b
-        d = c ** 2
-        
-        d.backward()
-        
-        # Symbolic Gradients:
-        # f = (a*b)^2
-        # df/dc = 2 * c = 2 * (a*b)
-        # dc/da = b
-        # dc/db = a
-        # df/da = df/dc * dc/da = 2 * (a*b) * b = 2 * a * b^2
-        # df/db = df/dc * dc/db = 2 * (a*b) * a = 2 * a^2 * b
-        #
-        # For a=2, b=3:
-        # df/da = 2 * 2 * 3^2 = 4 * 9 = 36
-        # df/db = 2 * 2^2 * 3 = 2 * 4 * 3 = 24
-        np.testing.assert_array_almost_equal(a.grad, np.array([36.0], dtype=np.float32))
-        np.testing.assert_array_almost_equal(b.grad, np.array([24.0], dtype=np.float32))
-
-    def test_complex_grad_log_exp(self):
-        a = Tensor([2.0], tensor_type=TensorType.PARAMETER)
-        b = Tensor([3.0], tensor_type=TensorType.PARAMETER)
-        c_val = Tensor([1.0], tensor_type=TensorType.PARAMETER) # Renamed to c_val to avoid conflict
-
-        # f(a, b, c_val) = log(a * b + exp(c_val))
-        # Let x = a * b
-        # Let y = exp(c_val)
-        # Let u = x + y
-        # Let z = log(u)
-        # z.backward()
-
-        x = a * b
-        y = exp(c_val)
-        u = x + y
-        z = log(u)
-        
-        z.backward()
-
-        # Symbolic Gradients:
-        # z = log(a*b + exp(c_val))
-        # Let inner = a*b + exp(c_val)
-        # dz/d_inner = 1 / inner
-        #
-        # dz/da = (1 / inner) * b
-        # dz/db = (1 / inner) * a
-        # dz/dc_val = (1 / inner) * exp(c_val)
-        #
-        # For a=2, b=3, c_val=1:
-        # inner_val = 2*3 + exp(1) = 6 + 2.71828 = 8.71828
-        # dz/da = 3 / 8.71828 = 0.34409
-        # dz/db = 2 / 8.71828 = 0.22939
-        # dz/dc_val = exp(1) / 8.71828 = 2.71828 / 8.71828 = 0.31179
-
-        inner_val = a.data[0] * b.data[0] + np.exp(c_val.data[0])
-        expected_grad_a = b.data[0] / inner_val
-        expected_grad_b = a.data[0] / inner_val
-        expected_grad_c = np.exp(c_val.data[0]) / inner_val
-        
-        np.testing.assert_array_almost_equal(a.grad, np.array([expected_grad_a], dtype=np.float32), decimal=5)
-        np.testing.assert_array_almost_equal(b.grad, np.array([expected_grad_b], dtype=np.float32), decimal=5)
-        np.testing.assert_array_almost_equal(c_val.grad, np.array([expected_grad_c], dtype=np.float32), decimal=5)
-        
-    def test_complex_grad_sum_squared_error_like(self):
-        a_data = np.array([1.0, 2.0, 3.0], dtype=np.float32)
-        b_data = np.array([4.0, 3.0, 2.0], dtype=np.float32)
-        a = Tensor(a_data, tensor_type=TensorType.PARAMETER)
-        b = Tensor(b_data, tensor_type=TensorType.PARAMETER)
-
-        # f(a, b) = sum((a - b)**2)
-        # Let x = a - b
-        # Let y = x ** 2
-        # Let z = sum(y)
-        # z.backward()
-
-        x = a - b
-        y = x ** 2
-        z = sum(y)
-        
-        z.backward()
-
-        # Symbolic Gradients:
-        # z = sum((a_i - b_i)^2)
-        # dz/da_i = 2 * (a_i - b_i)
-        # dz/db_i = -2 * (a_i - b_i)
-        #
-        # For a=[1,2,3], b=[4,3,2]:
-        # a-b = [-3, -1, 1]
-        # dz/da = 2 * [-3, -1, 1] = [-6, -2, 2]
-        # dz/db = -2 * [-3, -1, 1] = [6, 2, -2]
-
-        expected_grad_a = 2 * (a_data - b_data)
-        expected_grad_b = -2 * (a_data - b_data)
-
-        np.testing.assert_array_almost_equal(a.grad, expected_grad_a)
-        np.testing.assert_array_almost_equal(b.grad, expected_grad_b)
 
 class TestErrorHandling:
     """Test error handling and edge cases."""
@@ -448,6 +395,32 @@ class TestErrorHandling:
         expected_grad = first_grad + np.array([3.0], dtype=np.float32)
         np.testing.assert_array_equal(a.grad, expected_grad)
 
+class TestMemoryManagement:
+    """Test memory management to prevent leaks."""
+
+    def test_memory_leak_training_loop(self):
+        """Check for memory leaks during a simple training loop."""
+        
+        # Initial memory usage
+        gc.collect()
+        initial_memory = len(gc.get_objects())
+        
+        x = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
+        y = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
+        z = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
+        
+        for _ in range(100):
+            loss = sum(log(x**3 + tan(y)) * cos(exp(z)))
+            loss.backward()
+
+        # memory growth from the start to the end of the loop
+        memory_growth = len(gc.get_objects()) - initial_memory
+        percentage_memory_growth = (memory_growth / initial_memory) * 100
+
+        # This should check if the number of objects remains stable
+        # after the training loop, indicating no memory leak.
+        # The difference in the number of objects should not exceed 1% of the initial memory, when graph is disposed.
+        assert percentage_memory_growth < 1.0, f"Memory leak detected during training loop (growth exceeded 1.0%): {percentage_memory_growth: .3f}%"
 
 if __name__ == "__main__":
     pytest.main([__file__])
