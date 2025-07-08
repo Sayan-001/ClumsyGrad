@@ -6,7 +6,7 @@ It also contains some utility functions for managing tensors and their gradients
 
 from __future__ import annotations
 
-import weakref
+import gc
 from enum import IntEnum
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
@@ -17,12 +17,9 @@ from .grad import *
 
 class TensorType(IntEnum):
     """
-    Defines tensor types in the computational graph.
-    
-    Each type controls gradient computation and tensor behavior:
+    Defines tensor types in the computational graph. Each type controls gradient computation and tensor behavior.
     
     Examples:
-        >>> # Create different tensor types
         >>> input_tensor = Tensor([1, 2, 3], tensor_type=TensorType.INPUT)
         >>> param_tensor = Tensor([0.5, 0.3], tensor_type=TensorType.PARAMETER)
         >>> # INTERMEDIATE tensors are created automatically during operations
@@ -61,15 +58,10 @@ class Tensor:
     The main Tensor class, comprising the core functionality for creation and manipulation of tensors in the computational graph.
     """
     
-    _global_tensor_registry = weakref.WeakValueDictionary()
     _id_counter = 0
     
-    __slots__ = ('_data', '_shape', '_id', '_grad_fn', '_grad', '_children', '_parents', '_stale',
-                 '_extra', '_version', '_tensor_type', '_requires_grad', '__weakref__')
-    
-    _FIELD_DOCS = {
-        "_data": "The data of the tensor, stored as a numpy array.",
-    }
+    __slots__ = ('_data', '_shape', '_id', '_grad_fn', '_grad', '_children', '_parents',
+                 '_extra', '_tensor_type', '_requires_grad')
     
     @staticmethod
     def _create_node(data: Union[np.ndarray, list, float],
@@ -100,21 +92,17 @@ class Tensor:
         for parent in parents: parent._children.append(node)
         
         return node
-    
-    @staticmethod
-    def clear_stale_tensors():
-        """
-        Remove all tensors that are marked as stale from memory.
-        This is required to prevent unnecessary tensor objects from accumulating in memory.
-        """
+                
+    def _cleanup_references(self):
+        for parent in self._parents:
+            while self in parent._children:
+                parent._children.remove(self)
         
-        for tensor in list(Tensor._global_tensor_registry.values()):
-            if tensor._stale:
-                for parent in tensor._parents:
-                    parent._children.remove(tensor)
-                for child in tensor._children:
-                    child._parents = tuple(p for p in child._parents if p._id != tensor._id)
-                del Tensor._global_tensor_registry[tensor._id]
+        for child in self._children:
+            child._parents = tuple(p for p in child._parents if p._id != self._id)
+            
+        self._parents = ()
+        self._children.clear()
     
     def __init__(self, 
                  data: Union[np.ndarray, list, float],
@@ -146,16 +134,13 @@ class Tensor:
         else:
             self._requires_grad = False
         
-        self._stale = False
         self._parents: Tuple[Tensor, ...] = ()
         self._children: List[Tensor] = []
         
         self._id = Tensor._id_counter
         Tensor._id_counter += 1
-        self._version = 0
         
         self._extra = {}
-        Tensor._global_tensor_registry[self._id] = self
     
     def __repr__(self):
         grad_fn_name = self._grad_fn.__name__ if self._grad_fn else None
@@ -199,9 +184,9 @@ class Tensor:
         """
         new_tensor = None
         
-        if (self._grad_fn == transpose_backward and len(self._parents) == 1):
-            self._stale = True
+        if self._grad_fn == transpose_backward and len(self._parents) == 1:
             new_tensor = self._parents[0]
+            self._cleanup_references()
         else:
             new_tensor = Tensor._create_node(
                 data=self._data.T,
@@ -253,9 +238,6 @@ class Tensor:
             )
         
         return new_tensor
-    
-    def __rsub__(self, other: Union[Tensor, float]) -> Tensor:
-        return self.__sub__(other)
     
     def __mul__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
@@ -339,29 +321,26 @@ class Tensor:
         )
         return new_tensor
     
-    def backward(self, gradient: Optional[np.ndarray | float] = None, keep_grads: bool = False):
+    def backward(self, gradient: Optional[np.ndarray | float] = None, keep_graph: bool = False):
         """
-        backward pass to compute gradients.
+        backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
+        Only the current tensor and all INPUT/PARAMETER tensors will be retained in memory.
         
         Args:
             gradient: Optional gradient to start the backward pass. If None, it assumes a scalar output and uses ones.
-            keep_grads: If True, keeps gradients for all nodes in the graph. If False, clears gradients for intermediate nodes.
+            keep_graph: If True, keeps the computational graph for further backward passes.
             
         Raises:
             RuntimeError: If the tensor does not require gradients or if the gradient is not compatible.
             
         Note:
-            This method clears stale tensors before starting the backward pass.
-            It builds a reverse topological order of the computational graph,
-            starting from the current tensor, and computes gradients for each node.
+            - Setting `keep_graph=True` inside a training loop can lead to memory leaks.
             
         Example:
             >>> t = Tensor(np.array([1.0, 2.0, 3.0]), tensor_type=TensorType.PARAMETER)
             >>> y = t ** 2 + 3 * t + 2
             >>> y.backward()
         """
-        
-        Tensor.clear_stale_tensors()
         
         if not self._requires_grad:
             raise RuntimeError("Tensor does not require gradients")
@@ -370,6 +349,8 @@ class Tensor:
             if self._data.size != 1:
                 raise RuntimeError("Gradient can only be implicitly created for scalar outputs")
             gradient = np.ones_like(self._data)
+            
+        self._grad = gradient
         
         topo_order: List[Tensor] = []
         visited: Set[Tensor] = set()
@@ -385,8 +366,6 @@ class Tensor:
         
         build_topo(self)
         
-        self._grad = gradient
-        
         for node in reversed(topo_order):
             if node._grad_fn and node._grad is not None:
                 gradients = node._grad_fn(node, node._grad)
@@ -400,8 +379,17 @@ class Tensor:
             
                 # If the node is an intermediate node and we are not keeping gradients,
                 # we clear its gradient to save memory.
-                if not keep_grads and node._tensor_type == TensorType.INTERMEDIATE and node != self:      
+                if node._tensor_type == TensorType.INTERMEDIATE:      
                     node._grad = None
+               
+        if not keep_graph:    
+            for node in topo_order:
+                if node == self:
+                    node._parents = ()
+                elif node._tensor_type == TensorType.INTERMEDIATE:
+                    node._cleanup_references()
+                    
+        gc.collect()
             
 class TensorUtils:
     @staticmethod
@@ -427,8 +415,8 @@ class TensorUtils:
             if node._tensor_type == TensorType.PARAMETER:
                 parameters.append(node)
             
-            for child in (node._parents or []):
-                collect_params(child)
+            for parent in (node._parents or ()):
+                collect_params(parent)
         
         collect_params(tensor)
         return parameters
