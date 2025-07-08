@@ -69,13 +69,6 @@ class TestTensorArithmetic:
         assert c.requires_grad
         assert len(c._parents) == 2
     
-    def test_tensor_addition_shape_mismatch(self):
-        a = Tensor([1, 2, 3])
-        b = Tensor([[1, 2], [3, 4]])
-        
-        with pytest.raises(ValueError, match="Shape mismatch for addition"):
-            a + b
-    
     def test_scalar_addition(self):
         a = Tensor([1, 2, 3], tensor_type=TensorType.PARAMETER)
         c = a + 5
@@ -166,6 +159,100 @@ class TestMatrixOperations:
         
         assert b is a
 
+class TestBroadcastingOperations:
+    """Tests for broadcasting operations and their backward functions."""
+
+    def test_add_broadcast_scalar_to_tensor(self):
+        """Test addition of scalar to tensor (broadcasting)."""
+        x_data = np.array([[1., 2.], [3., 4.]])
+        scalar = 5.0
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x + scalar
+        expected_data = x_data + scalar
+        
+        np.testing.assert_array_almost_equal(result.data, expected_data)
+        assert result.shape == x_data.shape
+
+    def test_add_broadcast_different_shapes(self):
+        """Test addition with different but broadcastable shapes."""
+        x_data = np.array([[1., 2., 3.], [4., 5., 6.]])  # Shape (2, 3)
+        y_data = np.array([10., 20., 30.])                # Shape (3,)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x + y
+        expected_data = x_data + y_data  # NumPy handles broadcasting
+        
+        np.testing.assert_array_almost_equal(result.data, expected_data)
+        assert result.shape == (2, 3)
+
+    def test_broadcast_1d_to_2d(self):
+        """Test broadcasting 1D tensor to 2D tensor."""
+        x_data = np.array([[1., 2., 3.], [4., 5., 6.]])  # Shape (2, 3)
+        y_data = np.array([[1.], [2.]])                   # Shape (2, 1)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x + y
+        expected_data = x_data + y_data
+        
+        np.testing.assert_array_almost_equal(result.data, expected_data)
+        assert result.shape == (2, 3)
+        
+        # Test full backward pass
+        result.backward(np.ones((2, 3)))
+        
+        # x gradient should be ones
+        np.testing.assert_array_almost_equal(x.grad, np.ones((2, 3)))
+        
+        # y gradient should be reduced along axis 1
+        expected_y_grad = np.sum(np.ones((2, 3)), axis=1, keepdims=True)
+        np.testing.assert_array_almost_equal(y.grad, expected_y_grad)
+
+    def test_broadcast_error_incompatible_shapes(self):
+        """Test that incompatible shapes raise ValueError."""
+        x_data = np.array([[1., 2., 3.]])    # Shape (1, 3)
+        y_data = np.array([[1., 2.], [3., 4.]])  # Shape (2, 2)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        with pytest.raises(ValueError, match="Cannot broadcast shapes"):
+            result = x + y
+
+    def test_end_to_end_broadcast_backward(self):
+        """Test complete forward and backward pass with broadcasting."""
+        # Create tensors with different shapes
+        x_data = np.array([[1., 2., 3.], [4., 5., 6.]])  # Shape (2, 3)
+        y_data = np.array([0.1, 0.2, 0.3])               # Shape (3,)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        # Forward pass: z = x * y (with broadcasting)
+        z = x * y
+        
+        # Compute loss (sum of all elements)
+        loss = sum(z.reshape((6,)))  # This will create a chain: mul -> reshape -> sum
+        
+        # Backward pass
+        loss.backward()
+        
+        # Check that gradients have correct shapes
+        assert x.grad.shape == x_data.shape
+        assert y.grad.shape == y_data.shape
+        
+        # Verify gradient values
+        # For x: gradient should be y_data broadcasted to x's shape
+        expected_x_grad = np.broadcast_to(y_data, x_data.shape)
+        np.testing.assert_array_almost_equal(x.grad, expected_x_grad)
+        
+        # For y: gradient should be sum of x_data along axis 0
+        expected_y_grad = np.sum(x_data, axis=0)
+        np.testing.assert_array_almost_equal(y.grad, expected_y_grad)
 
 class TestMathOperations:
     """Test mathematical operations."""

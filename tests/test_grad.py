@@ -225,7 +225,127 @@ class TestReductionGradFunctions:
             [0.1/n, 0.2/n, 0.3/n]
         ])
         np.testing.assert_array_almost_equal(grad_x_tuple[0], expected_grad_x)
+        
+    def test_broadcast_scalar_tensor(self):
+        """Test broadcasting with scalar tensor (shape ())."""
+        x_data = np.array([[1., 2.], [3., 4.]])  # Shape (2, 2)
+        y_data = np.array(5.)                     # Scalar shape ()
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x * y
+        expected_data = x_data * y_data
+        
+        np.testing.assert_array_almost_equal(result.data, expected_data)
+        
+        # Test backward pass
+        upstream_grad = np.array([[0.1, 0.2], [0.3, 0.4]])
+        grad_tuple = grad_module.mul_broadcast_backward(result, upstream_grad)
+        
+        # x gradient
+        expected_x_grad = upstream_grad * y_data
+        np.testing.assert_array_almost_equal(grad_tuple[0], expected_x_grad)
+        
+        # y gradient (scalar - sum all elements)
+        expected_y_grad = np.sum(upstream_grad * x_data)
+        np.testing.assert_array_almost_equal(grad_tuple[1], expected_y_grad)
+        
+    def test_reduce_gradient_to_shape_helper(self):
+        """Test the _reduce_gradient_to_shape helper function directly."""
+        # Test case 1: Reduce from (2, 3) to (3,)
+        grad = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+        target_shape = (3,)
+        
+        result = grad_module._reduce_gradient_to_shape(grad, target_shape)
+        expected = np.array([0.5, 0.7, 0.9])  # Sum along axis 0
+        np.testing.assert_array_almost_equal(result, expected)
+        
+        # Test case 2: Reduce from (2, 3) to (1, 3)
+        target_shape = (1, 3)
+        result = grad_module._reduce_gradient_to_shape(grad, target_shape)
+        expected = np.array([[0.5, 0.7, 0.9]])  # Sum along axis 0, keep dims
+        np.testing.assert_array_almost_equal(result, expected)
+        
+        # Test case 3: Reduce from (2, 3) to scalar ()
+        target_shape = ()
+        result = grad_module._reduce_gradient_to_shape(grad, target_shape)
+        expected = np.sum(grad)  # Sum all elements to scalar
+        np.testing.assert_array_almost_equal(result, expected)
+        
+        # Test case 4: No reduction needed (same shape)
+        target_shape = (2, 3)
+        result = grad_module._reduce_gradient_to_shape(grad, target_shape)
+        np.testing.assert_array_almost_equal(result, grad)
 
+class TestBroadcastGradFunctions:
+    def test_add_broadcast_backward_different_shapes(self):
+        """Test backward pass for addition with broadcasting."""
+        x_data = np.array([[1., 2., 3.], [4., 5., 6.]])  # Shape (2, 3)
+        y_data = np.array([10., 20., 30.])                # Shape (3,)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x + y
+        upstream_grad = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+        
+        # Test the backward function directly
+        grad_tuple = grad_module.add_broadcast_backward(result, upstream_grad)
+        
+        # x gradient should be the same shape as x
+        expected_x_grad = upstream_grad
+        np.testing.assert_array_almost_equal(grad_tuple[0], expected_x_grad)
+        
+        # y gradient should be reduced to shape (3,) by summing along axis 0
+        expected_y_grad = np.sum(upstream_grad, axis=0)
+        np.testing.assert_array_almost_equal(grad_tuple[1], expected_y_grad)
+
+    def test_sub_broadcast_backward_different_shapes(self):
+        """Test backward pass for subtraction with broadcasting."""
+        x_data = np.array([[1., 2., 3.], [4., 5., 6.]])  # Shape (2, 3)
+        y_data = np.array([1., 1., 1.])                   # Shape (3,)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x - y
+        upstream_grad = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+        
+        # Test the backward function directly
+        grad_tuple = grad_module.sub_broadcast_backward(result, upstream_grad)
+        
+        # x gradient should be positive
+        expected_x_grad = upstream_grad
+        np.testing.assert_array_almost_equal(grad_tuple[0], expected_x_grad)
+        
+        # y gradient should be negative and reduced
+        expected_y_grad = -np.sum(upstream_grad, axis=0)
+        np.testing.assert_array_almost_equal(grad_tuple[1], expected_y_grad)
+
+    def test_mul_broadcast_backward_different_shapes(self):
+        """Test backward pass for multiplication with broadcasting."""
+        x_data = np.array([[2., 3.], [4., 5.]])  # Shape (2, 2)
+        y_data = np.array([10., 20.])            # Shape (2,)
+        
+        x = Tensor(x_data, tensor_type=TensorType.PARAMETER)
+        y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
+        
+        result = x * y
+        upstream_grad = np.array([[0.1, 0.2], [0.3, 0.4]])
+        
+        # Test the backward function directly
+        grad_tuple = grad_module.mul_broadcast_backward(result, upstream_grad)
+        
+        # x gradient: grad * y (broadcasted)
+        y_broadcasted = np.broadcast_to(y_data, x_data.shape)
+        expected_x_grad = upstream_grad * y_broadcasted
+        np.testing.assert_array_almost_equal(grad_tuple[0], expected_x_grad)
+        
+        # y gradient: grad * x, then reduced
+        x_broadcasted = np.broadcast_to(x_data, upstream_grad.shape)
+        expected_y_grad = np.sum(upstream_grad * x_broadcasted, axis=0)
+        np.testing.assert_array_almost_equal(grad_tuple[1], expected_y_grad)
 
 class TestMathOpGradFunctions:
     """Tests for backward functions of standard mathematical operations."""
