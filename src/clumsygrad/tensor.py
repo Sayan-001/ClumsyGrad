@@ -14,7 +14,6 @@ import numpy as np
 
 from .grad import *
 
-
 class TensorType(IntEnum):
     """
     Defines tensor types in the computational graph. Each type controls gradient computation and tensor behavior.
@@ -82,8 +81,14 @@ class Tensor:
         Returns:
             A new Tensor instance representing the node in the computational graph. 
         """
+        tensor_type = TensorType.INPUT
         
-        node = Tensor(data=data, tensor_type=TensorType.INTERMEDIATE)
+        for parent in parents:
+            if parent._tensor_type == TensorType.PARAMETER or parent._tensor_type == TensorType.INTERMEDIATE:
+                tensor_type = TensorType.INTERMEDIATE
+                break
+        
+        node = Tensor(data=data, tensor_type=tensor_type)
         node._grad_fn = grad_fn
         node._parents = parents
         node._requires_grad = any(parent._requires_grad for parent in parents)
@@ -92,6 +97,60 @@ class Tensor:
         for parent in parents: parent._children.append(node)
         
         return node
+    
+    @staticmethod
+    def _broadcast_shapes(shape1: tuple, shape2: tuple) -> tuple:
+        """
+        Determine the broadcasted shape for two tensor shapes.
+        
+        Args:
+            shape1: Shape of the first tensor
+            shape2: Shape of the second tensor
+            
+        Returns:
+            The broadcasted shape
+            
+        Raises:
+            ValueError: If shapes are not broadcastable
+        """
+        # Pad shorter shape with 1s on the left
+        len_diff = abs(len(shape1) - len(shape2))
+        if len(shape1) < len(shape2):
+            shape1 = (1,) * len_diff + shape1
+        elif len(shape2) < len(shape1):
+            shape2 = (1,) * len_diff + shape2
+        
+        # Check compatibility and compute result shape
+        result_shape = []
+        for dim1, dim2 in zip(shape1, shape2):
+            if dim1 == 1:
+                result_shape.append(dim2)
+            elif dim2 == 1:
+                result_shape.append(dim1)
+            elif dim1 == dim2:
+                result_shape.append(dim1)
+            else:
+                raise ValueError(f"Cannot broadcast shapes {shape1} and {shape2}")
+        
+        return tuple(result_shape)
+    
+    @staticmethod
+    def _can_broadcast(shape1: tuple, shape2: tuple) -> bool:
+        """
+        Check if two shapes can be broadcasted together.
+        
+        Args:
+            shape1: Shape of the first tensor
+            shape2: Shape of the second tensor
+            
+        Returns:
+            True if shapes are broadcastable, False otherwise
+        """
+        try:
+            Tensor._broadcast_shapes(shape1, shape2)
+            return True
+        except ValueError:
+            return False
                 
     def _cleanup_references(self):
         for parent in self._parents:
@@ -198,14 +257,27 @@ class Tensor:
     
     def __add__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
-            if self._shape != other._shape:
-                raise ValueError(f"Shape mismatch for addition: {self._shape} vs {other._shape}")
-            
-            new_tensor = Tensor._create_node(
-                data=self._data + other._data,
-                grad_fn=add_backward,
-                parents=(self, other),
-            )
+            if Tensor._can_broadcast(self._shape, other._shape):
+                result_data = self._data + other._data
+                
+                if self._shape == other._shape:
+                    grad_fn = add_backward
+                    extra = None
+                else:
+                    grad_fn = add_broadcast_backward
+                    extra = {
+                        'left_shape': self._shape,
+                        'right_shape': other._shape,
+                    }
+                
+                new_tensor = Tensor._create_node(
+                    data=result_data,
+                    grad_fn=grad_fn,
+                    parents=(self, other),
+                    extra=extra
+                )
+            else:
+                raise ValueError(f"Cannot broadcast shapes {self._shape} and {other._shape}")
         else:
             new_tensor = Tensor._create_node(
                 data=self._data + other,
@@ -213,7 +285,7 @@ class Tensor:
                 parents=(self,),
                 extra={'scalar_value': float(other)}
             )
-        
+            
         return new_tensor
     
     def __radd__(self, other: Union[Tensor, float]) -> Tensor:
@@ -221,14 +293,27 @@ class Tensor:
     
     def __sub__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
-            if self._shape != other._shape:
-                raise ValueError(f"Shape mismatch for subtraction: {self._shape} vs {other._shape}")
-            
-            new_tensor = Tensor._create_node(
-                data=self._data - other._data,
-                grad_fn=sub_backward,
-                parents=(self, other),
-            )
+            if Tensor._can_broadcast(self._shape, other._shape):
+                result_data = self._data - other._data
+
+                if self._shape == other._shape:
+                    grad_fn = sub_backward
+                    extra = None
+                else:
+                    grad_fn = sub_broadcast_backward
+                    extra = {
+                        'left_shape': self._shape,
+                        'right_shape': other._shape,
+                    }
+                
+                new_tensor = Tensor._create_node(
+                    data=result_data,
+                    grad_fn=grad_fn,
+                    parents=(self, other),
+                    extra=extra
+                )
+            else:
+                raise ValueError(f"Cannot broadcast shapes {self._shape} and {other._shape}")
         else:
             new_tensor = Tensor._create_node(
                 data=self._data - other,
@@ -236,19 +321,32 @@ class Tensor:
                 parents=(self,),
                 extra={'scalar_value': float(other)}
             )
-        
+            
         return new_tensor
     
     def __mul__(self, other: Union[Tensor, float]) -> Tensor:
         if isinstance(other, Tensor):
-            if self._shape != other._shape:
-                raise ValueError(f"Shape mismatch for multiplication: {self._shape} vs {other._shape}")
-            
-            new_tensor = Tensor._create_node(
-                data=self._data * other._data,
-                grad_fn=mul_backward,
-                parents=(self, other),
-            )
+            if Tensor._can_broadcast(self._shape, other._shape):
+                result_data = self._data * other._data
+                
+                if self._shape == other._shape:
+                    grad_fn = mul_backward
+                    extra = None
+                else:
+                    grad_fn = mul_broadcast_backward
+                    extra = {
+                        'left_shape': self._shape,
+                        'right_shape': other._shape,
+                    }
+                
+                new_tensor = Tensor._create_node(
+                    data=result_data,
+                    grad_fn=grad_fn,
+                    parents=(self, other),
+                    extra=extra
+                )
+            else:
+                raise ValueError(f"Cannot broadcast shapes {self._shape} and {other._shape}")
         else:
             new_tensor = Tensor._create_node(
                 data=self._data * other,
@@ -256,7 +354,7 @@ class Tensor:
                 parents=(self,),
                 extra={'scalar_value': float(other)}
             )
-        
+            
         return new_tensor
     
     def __rmul__(self, other: Union[Tensor, float]) -> Tensor:

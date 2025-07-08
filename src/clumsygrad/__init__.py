@@ -7,7 +7,7 @@ For detailed documentation, refer: `https://clumsygrad.readthedocs.io/en/latest/
 
 from . import activation, grad, loss, math, optimizer, random, tensor
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 __all__ = [
     "tensor",

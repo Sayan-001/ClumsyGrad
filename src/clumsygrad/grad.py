@@ -435,3 +435,109 @@ def mae_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     sign_diff = np.sign(diff)
     
     return (grad * sign_diff / n, grad * (-sign_diff) / n)
+
+"""
+Backward functions fro broadcasting operations.
+"""
+
+def add_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
+    r"""
+    Backward function for broadcasted addition operation.
+    
+    For :math:`z = x + y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    
+    .. math::
+        \frac{\partial z}{\partial x} = \text{reduce}(\text{grad}, \text{left\_shape})
+        
+        \frac{\partial z}{\partial y} = \text{reduce}(\text{grad}, \text{right\_shape})
+    
+    The gradients are reduced (summed) along broadcasted dimensions and reshaped 
+    to match the original tensor shapes.
+    """
+    left_shape = tensor._extra.get('left_shape')
+    right_shape = tensor._extra.get('right_shape')
+    
+    left_grad = _reduce_gradient_to_shape(grad, left_shape)
+    right_grad = _reduce_gradient_to_shape(grad, right_shape)
+    
+    return (left_grad, right_grad)
+
+def sub_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
+    r"""
+    Backward function for broadcasted subtraction operation.
+    
+    For :math:`z = x - y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    
+    .. math::
+        \frac{\partial z}{\partial x} = \text{reduce}(\text{grad}, \text{left\_shape})
+        
+        \frac{\partial z}{\partial y} = \text{reduce}(-\text{grad}, \text{right\_shape})
+    
+    The gradient for the first operand is positive, for the second operand is negative.
+    Both are reduced to match the original tensor shapes.
+    """
+    left_shape = tensor._extra.get('left_shape')
+    right_shape = tensor._extra.get('right_shape')
+    
+    left_grad = _reduce_gradient_to_shape(grad, left_shape)
+    right_grad = _reduce_gradient_to_shape(-grad, right_shape)
+    
+    return (left_grad, right_grad)
+
+def mul_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
+    r"""
+    Backward function for broadcasted element-wise multiplication.
+    
+    For :math:`z = x \odot y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    
+    .. math::
+        \frac{\partial z}{\partial x} = \text{reduce}(\text{grad} \odot \text{broadcast}(y), \text{left\_shape})
+        
+        \frac{\partial z}{\partial y} = \text{reduce}(\text{grad} \odot \text{broadcast}(x), \text{right\_shape})
+    
+    Each tensor's gradient is the gradient times the other tensor's values,
+    then reduced to match the original tensor shapes.
+    """
+    
+    left_shape = tensor._extra.get('left_shape')
+    right_shape = tensor._extra.get('right_shape')
+    x, y = tensor._parents
+    
+    y_broadcasted = np.broadcast_to(y._data, grad.shape)
+    x_broadcasted = np.broadcast_to(x._data, grad.shape)
+    
+    left_grad = _reduce_gradient_to_shape(grad * y_broadcasted, left_shape)
+    right_grad = _reduce_gradient_to_shape(grad * x_broadcasted, right_shape)
+    
+    return (left_grad, right_grad)
+
+def _reduce_gradient_to_shape(grad: np.ndarray, target_shape: tuple) -> np.ndarray:
+    r"""
+    Reduce gradient from broadcasted shape back to target shape.
+    
+    Args:
+        grad: Gradient with broadcasted shape
+        target_shape: Original tensor shape to reduce back to
+        
+    Returns:
+        Gradient reduced to target shape
+    """
+
+    if target_shape == ():
+        return np.sum(grad)
+    
+    result = grad
+    
+    ndim_added = result.ndim - len(target_shape)
+    
+    if ndim_added > 0:
+        axes_to_sum = tuple(range(ndim_added))
+        result = np.sum(result, axis=axes_to_sum)
+
+    for i, (result_dim, target_dim) in enumerate(zip(result.shape, target_shape)):
+        if target_dim == 1 and result_dim > 1:
+            result = np.sum(result, axis=i, keepdims=True)
+
+    result = result.reshape(target_shape)
+    
+    return result
