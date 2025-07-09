@@ -1,8 +1,10 @@
-# ClumsyGrad
 
-<div style="text-align: center;">
-  <img src="./logo.png" alt="Your Image Description" width="200">
-</div>
+
+<p align="center">
+  <img src="./logo.png" alt="logo">
+</p>
+
+# ClumsyGrad
 
 [![PyPI version](https://badge.fury.io/py/clumsygrad.svg)](https://badge.fury.io/py/clumsygrad)
 [![Docs](https://readthedocs.org/projects/clumsygrad/badge/?version=latest)](https://clumsygrad.readthedocs.io/en/latest/)
