@@ -19,7 +19,7 @@ A minimal Python library for automatic differentiation, built on top of NumPy. T
 
 ## Installation
 
-You can install ClumsyGrad using pip:
+You can install the library using pip:
 
 ```shell
 pip install clumsygrad
