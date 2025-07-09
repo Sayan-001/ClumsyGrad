@@ -56,7 +56,8 @@ x = Tensor([1.0, 2.0, 3.0])
 y = exp(x**2 + 3*x + 2)
 z = sin(y)
 
-# As implicitly tensors are of type INPUT, the computational graph is not built, signified by `grad_fn=None`.
+# As implicitly tensors are of type INPUT, the computational graph is not built, signified by
+# grad_fn = None.
 print(z) # Tensor(id=6, shape=(3,), tensor_type=INPUT, grad_fn=None, requires_grad=False)
 print(z.data) # [0.9648606  0.99041617 0.83529955]
 
