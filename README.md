@@ -86,7 +86,7 @@ z = sum(exp(sin(x)**2 + cos(y)))
 # Calculating dz/dx and dz/dy
 z.backward()
 
-# Value of dy/dx
+# Value of dz/dx
 print(x.grad) # [ 4.43963  -2.96972  -0.127928]
 # Value of dz/dy
 print(y.grad) # [-2.34079   3.30197  -0.274006]
