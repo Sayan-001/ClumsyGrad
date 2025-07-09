@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.clumsygrad.math import abs, cos, exp, log, mean, sin, sum, tan
 from src.clumsygrad.tensor import Tensor, TensorType, TensorUtils
+from src.clumsygrad.loss import mse_loss
 
 
 class TestTensorCreation:
@@ -389,11 +390,11 @@ class TestTensorUtils:
 
 class TestComplexOperations:
     """Test complex operation chains."""
-    testing_values = [0.617, 0.591, 0.505, 0.956, 0.047, 0.128, 0.144, 0.452, 0.53, 0.74]
+    testing_values = [0.617, 0.591, 0.505, 0.956, 0.047, 0.128, 0.144, 0.452, 0.513, 0.749]
 
     def test_complex_expression1(self):
         for value in self.testing_values:
-            x = Tensor(random.random(), tensor_type=TensorType.PARAMETER)
+            x = Tensor(value, tensor_type=TensorType.PARAMETER)
             
             y = (x**2 + sin(x))*exp(cos(x))
             deriv_y = (2*x + cos(x))*exp(cos(x)) - (x**2 + sin(x))*exp(cos(x))*sin(x)
@@ -490,24 +491,25 @@ class TestMemoryManagement:
         
         # Initial memory usage
         gc.collect()
-        initial_memory = len(gc.get_objects())
+        initial_count, final_count  = 0, 0
         
         x = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
-        y = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
-        z = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
+        y = Tensor(np.random.rand(10), tensor_type=TensorType.INPUT)
         
-        for _ in range(100):
-            loss = sum(log(x**3 + tan(y)) * cos(exp(z)))
+        for epoch in range(100):
+            z = x ** 2 + 9 * x + 7
+            loss = mse_loss(z, y)
+            
             loss.backward()
+            
+            if epoch == 5:
+                initial_count = len([obj for obj in gc.get_objects() if isinstance(obj, Tensor)])
+                
+            if epoch == 95:
+                final_count = len([obj for obj in gc.get_objects() if isinstance(obj, Tensor)])
 
-        # memory growth from the start to the end of the loop
-        memory_growth = len(gc.get_objects()) - initial_memory
-        percentage_memory_growth = (memory_growth / initial_memory) * 100
-
-        # This should check if the number of objects remains stable
-        # after the training loop, indicating no memory leak.
-        # The difference in the number of objects should not exceed 1% of the initial memory, when graph is disposed.
-        assert percentage_memory_growth < 1.0, f"Memory leak detected during training loop (growth exceeded 1.0%): {percentage_memory_growth: .3f}%"
+        #Count should be the same before and after training
+        assert initial_count == final_count, f"Memory leak detected: {final_count - initial_count} extra Tensors created"
 
 if __name__ == "__main__":
     pytest.main([__file__])
