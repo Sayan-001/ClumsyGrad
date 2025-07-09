@@ -89,12 +89,15 @@ class Tensor:
                 break
         
         node = Tensor(data=data, tensor_type=tensor_type)
-        node._grad_fn = grad_fn
-        node._parents = parents
-        node._requires_grad = any(parent._requires_grad for parent in parents)
         
-        if extra: node._extra.update(extra)
-        for parent in parents: parent._children.append(node)
+        if tensor_type != TensorType.INPUT:
+            node._grad_fn = grad_fn
+            node._parents = parents
+            
+            if extra: node._extra.update(extra)
+            for parent in parents: parent._children.append(node)
+            
+        node._requires_grad = any(parent._requires_grad for parent in parents)
         
         return node
     
@@ -482,9 +485,7 @@ class Tensor:
                
         if not keep_graph:    
             for node in topo_order:
-                if node == self:
-                    node._parents = ()
-                elif node._tensor_type == TensorType.INTERMEDIATE:
+                if node._tensor_type == TensorType.INTERMEDIATE:
                     node._cleanup_references()
                     
         gc.collect()
