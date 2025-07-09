@@ -9,7 +9,7 @@
 [![PyPI version](https://badge.fury.io/py/clumsygrad.svg)](https://badge.fury.io/py/clumsygrad)
 [![Docs](https://readthedocs.org/projects/clumsygrad/badge/?version=latest)](https://clumsygrad.readthedocs.io/en/latest/)
 
-**ClumsyGrad** is a minimal Python library for automatic differentiation, built on top of NumPy. The `Tensor` class has support for creating and expanding a computation graph dynamically with each operation.
+A minimal Python library for automatic differentiation, built on top of NumPy. The `Tensor` class has support for creating and expanding a computation graph dynamically with each operation.
 
 ## Features
 
