@@ -51,6 +51,7 @@ coverage.xml
 .pytest_cache/
 cover/
 examples/
+profiles/
 
 # Translations
 *.mo
