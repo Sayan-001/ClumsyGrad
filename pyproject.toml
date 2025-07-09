@@ -37,7 +37,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
-dependencies = ["numpy>=2.0.0"]
+dependencies = ["numpy>=2.0.0", "pytest>=8.3.5"]
 
 # List URLs that are relevant to the project
 [project.urls]
