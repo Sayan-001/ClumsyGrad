@@ -59,7 +59,7 @@ class Tensor:
     
     _id_counter = 0
     
-    __slots__ = ('_data', '_shape', '_id', '_grad_fn', '_grad', '_children', '_parents',
+    __slots__ = ('_data', '_shape', '_id', '_grad_fn', '_grad', '_parents',
                  '_extra', '_tensor_type', '_requires_grad')
     
     @staticmethod
@@ -95,7 +95,6 @@ class Tensor:
             node._parents = parents
             
             if extra: node._extra.update(extra)
-            for parent in parents: parent._children.append(node)
             
         node._requires_grad = any(parent._requires_grad for parent in parents)
         
@@ -155,16 +154,8 @@ class Tensor:
         except ValueError:
             return False
                 
-    def _cleanup_references(self):
-        for parent in self._parents:
-            while self in parent._children:
-                parent._children.remove(self)
-        
-        for child in self._children:
-            child._parents = tuple(p for p in child._parents if p._id != self._id)
-            
+    def _cleanup_references(self):                    
         self._parents = ()
-        self._children.clear()
     
     def __init__(self, 
                  data: Union[np.ndarray, list, float],
@@ -197,7 +188,6 @@ class Tensor:
             self._requires_grad = False
         
         self._parents: Tuple[Tensor, ...] = ()
-        self._children: List[Tensor] = []
         
         self._id = Tensor._id_counter
         Tensor._id_counter += 1
@@ -239,14 +229,10 @@ class Tensor:
     def T(self) -> Tensor:
         """
         Returns the transpose of the tensor.
-        
-        Note:
-            Double transposing a tensor returns the original tensor node,
-            and creates a new stale tensor, which needs to be cleared if required.
         """
         new_tensor = None
         
-        if self._grad_fn == transpose_backward and len(self._parents) == 1:
+        if self._grad_fn == transpose_backward:
             new_tensor = self._parents[0]
             self._cleanup_references()
         else:
@@ -443,8 +429,11 @@ class Tensor:
             >>> y.backward()
         """
         
-        if not self._requires_grad:
-            raise RuntimeError("Tensor does not require gradients")
+        if self._tensor_type == TensorType.INPUT or self._tensor_type == TensorType.PARAMETER:
+            raise RuntimeError("Cannot call backward on INPUT or PARAMETER tensors directly")
+        
+        if self._parents == () and self._tensor_type == TensorType.INTERMEDIATE:
+            raise RuntimeError("No backward graph exists for this tensor")
         
         if gradient is None:
             if self._data.size != 1:
@@ -478,8 +467,6 @@ class Tensor:
                         else:
                             parent._grad = parent._grad + grad
             
-                # If the node is an intermediate node and we are not keeping gradients,
-                # we clear its gradient to save memory.
                 if node._tensor_type == TensorType.INTERMEDIATE:      
                     node._grad = None
                
@@ -541,8 +528,8 @@ class TensorUtils:
             visited.add(node._id)
             counts[node._tensor_type] += 1
             
-            for child in (node._parents or []):
-                count_nodes(child)
+            for parent in (node._parents or []):
+                count_nodes(parent)
         
         count_nodes(tensor)
         return counts
