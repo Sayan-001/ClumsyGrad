@@ -2,14 +2,12 @@ import os
 import sys
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import src.clumsygrad.grad as grad_module
 from src.clumsygrad.math import abs, cos, exp, log, mean, sin, sqrt, sum, tan
 from src.clumsygrad.tensor import Tensor, TensorType
-
 
 class TestElementaryGradFunctions:
     """Tests for backward functions of elementary tensor operations."""
@@ -411,6 +409,3 @@ class TestMathOpGradFunctions:
         grad_x_tuple = grad_module.tan_backward(child_tensor, incoming_grad)
         expected_grad_x = incoming_grad * (1 / np.cos(x_data)**2)
         np.testing.assert_array_almost_equal(grad_x_tuple[0], expected_grad_x)
-
-if __name__ == "__main__":
-    pytest.main([__file__])

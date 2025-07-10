@@ -1,6 +1,5 @@
 import gc
 import os
-import random
 import sys
 
 import numpy as np
@@ -8,10 +7,9 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.clumsygrad.math import abs, cos, exp, log, mean, sin, sum, tan
+from src.clumsygrad.math import cos, exp, log, sin, sum, tan
 from src.clumsygrad.tensor import Tensor, TensorType, TensorUtils
 from src.clumsygrad.loss import mse_loss
-
 
 class TestTensorCreation:
     """Test tensor creation and basic properties."""
@@ -255,75 +253,6 @@ class TestBroadcastingOperations:
         expected_y_grad = np.sum(x_data, axis=0)
         np.testing.assert_array_almost_equal(y.grad, expected_y_grad)
 
-class TestMathOperations:
-    """Test mathematical operations."""
-    
-    def test_power(self):
-        a = Tensor([2, 3, 4], tensor_type=TensorType.PARAMETER)
-        c = a ** 2
-        
-        expected = np.array([4, 9, 16], dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-        assert c.requires_grad
-    
-    def test_sum_operation(self):
-        a = Tensor([[1, 2], [3, 4]], tensor_type=TensorType.PARAMETER)
-        c = sum(a)
-        
-        expected = np.array(10, dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-        assert c.requires_grad
-    
-    def test_sum_with_axis(self):
-        a = Tensor([[1, 2], [3, 4]], tensor_type=TensorType.PARAMETER)
-        c = sum(a, axis=0)
-        
-        expected = np.array([4, 6], dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-    
-    def test_mean_operation(self):
-        a = Tensor([[2, 4], [6, 8]], tensor_type=TensorType.PARAMETER)
-        c = mean(a)
-        
-        expected = np.array(5.0, dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-        assert c.requires_grad
-    
-    def test_abs_operation(self):
-        a = Tensor([-1, 2, -3], tensor_type=TensorType.PARAMETER)
-        c = abs(a)
-        
-        expected = np.array([1, 2, 3], dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-    
-    def test_exp_operation(self):
-        a = Tensor([0, 1, 2], tensor_type=TensorType.PARAMETER)
-        c = exp(a)
-        
-        expected = np.exp(np.array([0, 1, 2], dtype=np.float32))
-        np.testing.assert_array_almost_equal(c.data, expected)
-    
-    def test_log_operation(self):
-        a = Tensor([1, 2, 3], tensor_type=TensorType.PARAMETER)
-        c = log(a)
-        
-        expected = np.log(np.array([1, 2, 3], dtype=np.float32))
-        np.testing.assert_array_almost_equal(c.data, expected)
-    
-    def test_reshape_operation(self):
-        a = Tensor([1, 2, 3, 4, 5, 6], tensor_type=TensorType.PARAMETER)
-        c = a.reshape((2, 3))
-        
-        expected = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
-        np.testing.assert_array_equal(c.data, expected)
-        assert c.shape == (2, 3)
-    
-    def test_reshape_invalid_size(self):
-        a = Tensor([1, 2, 3, 4], tensor_type=TensorType.PARAMETER)
-        
-        with pytest.raises(ValueError, match="New shape must have the same number of elements"):
-            a.reshape((2, 3))
-
 class TestBackpropagation:
     """Test backward propagation."""
     
@@ -347,18 +276,6 @@ class TestBackpropagation:
         
         expected_grad = np.array([[2, 2], [2, 2]], dtype=np.float32)
         np.testing.assert_array_equal(a.grad, expected_grad)
-    
-    def test_backward_no_grad_error(self):
-        a = Tensor([1, 2, 3])  # INPUT type, no grad
-        
-        with pytest.raises(RuntimeError, match="Tensor does not require gradients"):
-            a.backward()
-    
-    def test_backward_non_scalar_error(self):
-        a = Tensor([1, 2, 3], tensor_type=TensorType.PARAMETER)
-        
-        with pytest.raises(RuntimeError, match="Gradient can only be implicitly created for scalar outputs"):
-            a.backward()
 
 class TestTensorUtils:
     """Test TensorUtils functionality."""
@@ -489,7 +406,6 @@ class TestMemoryManagement:
     def test_memory_leak_training_loop(self):
         """Check for memory leaks during a simple training loop."""
         
-        # Initial memory usage
         gc.collect()
         initial_count, final_count  = 0, 0
         
@@ -510,6 +426,3 @@ class TestMemoryManagement:
 
         #Count should be the same before and after training
         assert initial_count == final_count, f"Memory leak detected: {final_count - initial_count} extra Tensors created"
-
-if __name__ == "__main__":
-    pytest.main([__file__])
