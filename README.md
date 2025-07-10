@@ -1,9 +1,3 @@
-
-
-<p align="center">
-  <img src="./logo.png" alt="logo">
-</p>
-
 # ClumsyGrad
 
 [![PyPI version](https://badge.fury.io/py/clumsygrad.svg)](https://badge.fury.io/py/clumsygrad)
