@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 project = 'ClumsyGrad'
 copyright = '2025, Sayan Gupta'
 author = 'Sayan Gupta'
-release = '0.1.3'
-version = '0.1.3'
+release = '0.1.4'
+version = '0.1.4'
 
 # -- General configuration ---------------------------------------------------
 extensions = [
