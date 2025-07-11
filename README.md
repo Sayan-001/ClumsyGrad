@@ -67,24 +67,24 @@ print(z.data) # [0.9648606  0.99041617 0.83529955]
 
 ### Automatic Differentiation (Backpropagation)
 
-Consider the function $~z = sum(e^{sin(x)^2 + cos(y)})$. We can evaluate $\frac{dz}{dx}$ and $\frac{dz}{dy}$ at particular points as:
+Consider the function $~z = e^{sin(x)^2 + cos(y)}$. We can evaluate $\frac{dz}{dx}$ and $\frac{dz}{dy}$ at particular point as:
 
 ```python
 from clumsygrad.tensor import Tensor, TensorType
 from clumsygrad.math import exp, sin, cos, sum
 
 # Set tensor_type to PARAMETER to ensure gradients are tracked
-x = Tensor([1.0, 2.0, 3.0], tensor_type=TensorType.PARAMETER)
-y = Tensor([0.5, -1.0, 2.5], tensor_type=TensorType.PARAMETER)
+x = Tensor(1.0, tensor_type=TensorType.PARAMETER)
+y = Tensor(0.5, tensor_type=TensorType.PARAMETER)
 z = sum(exp(sin(x)**2 + cos(y)))
 
 # Calculating dz/dx and dz/dy
 z.backward()
 
 # Value of dz/dx
-print(x.grad) # [ 4.43963  -2.96972  -0.127928]
+print(x.grad) # [4.43963]
 # Value of dz/dy
-print(y.grad) # [-2.34079   3.30197  -0.274006]
+print(y.grad) # [-2.34079]
 ```
 
 ## Contributing
