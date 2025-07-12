@@ -4,9 +4,6 @@ This module provides basic mathematical operations.
 
 import numpy as np
 
-from .grad import (abs_backward, cos_backward, exp_backward, log_backward,
-                   mean_backward, sin_backward, sqrt_backward, sum_backward,
-                   tan_backward)
 from .tensor import Tensor
 
 
@@ -22,6 +19,8 @@ def sum(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
     Returns:
         A new Tensor containing the sum of the input tensor.
     """
+    
+    from .grad import sum_backward
     
     new_tensor = Tensor._create_node(
         data=np.sum(tensor._data, axis=axis, keepdims=keepdims),
@@ -44,6 +43,8 @@ def mean(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
         A new Tensor containing the mean of the input tensor.
     """
     
+    from .grad import mean_backward
+    
     new_tensor = Tensor._create_node(
         data=np.mean(tensor._data, axis=axis, keepdims=keepdims),
         grad_fn=mean_backward,
@@ -57,6 +58,8 @@ def abs(tensor: Tensor) -> Tensor:
     Compute the absolute value of the tensor.
     """
     
+    from .grad import abs_backward
+    
     new_tensor = Tensor._create_node(
         data=np.abs(tensor._data),
         grad_fn=abs_backward,
@@ -68,6 +71,8 @@ def sqrt(tensor: Tensor) -> Tensor:
     """
     Compute the square root of the tensor.
     """
+    
+    from .grad import sqrt_backward
     
     new_tensor = Tensor._create_node(
         data=np.sqrt(tensor._data),
@@ -81,6 +86,8 @@ def exp(tensor: Tensor) -> Tensor:
     Compute the exponential of the tensor.
     """
     
+    from .grad import exp_backward
+    
     new_tensor = Tensor._create_node(
         data=np.exp(tensor._data),
         grad_fn=exp_backward,
@@ -92,6 +99,8 @@ def log(tensor: Tensor) -> Tensor:
     """
     Compute the natural logarithm of the tensor.
     """
+    
+    from .grad import log_backward
     
     new_tensor = Tensor._create_node(
         data=np.log(tensor._data),
@@ -105,6 +114,8 @@ def sin(tensor: Tensor) -> Tensor:
     Compute the sine of the tensor.
     """
     
+    from .grad import sin_backward
+    
     new_tensor = Tensor._create_node(
         data=np.sin(tensor._data),
         grad_fn=sin_backward,
@@ -117,6 +128,8 @@ def cos(tensor: Tensor) -> Tensor:
     Compute cosine of tensor.
     """
     
+    from .grad import cos_backward
+    
     new_tensor = Tensor._create_node(
         data=np.cos(tensor._data),
         grad_fn=cos_backward,
@@ -128,6 +141,8 @@ def tan(tensor: Tensor) -> Tensor:
     """
     Compute tangent of tensor.
     """
+    
+    from .grad import tan_backward
     
     new_tensor = Tensor._create_node(
         data=np.tan(tensor._data),

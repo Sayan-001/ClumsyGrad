@@ -4,18 +4,16 @@ It provides a `Tensor` class with support for building dynamic computation graph
 
 For detailed documentation, refer: `https://clumsygrad.readthedocs.io/en/latest/` 
 """
-
 from . import activation, grad, loss, math, optimizer, random, tensor
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 
 __all__ = [
     "tensor",
-    "grad",
-    "activation",
-    "optimizer",
-    "loss",
     "random",
+    "activation",
+    "grad",
+    "loss",
     "math",
-    "__version__"
+    "optimizer",
 ]

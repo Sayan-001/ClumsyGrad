@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 
 [project]
 name = "clumsygrad"
-version = "0.1.4"
+version = "0.2.0"
 authors = [
   { name="Sayan Gupta", email="sayangupta540@gmail.com" },
 ]
@@ -33,9 +33,12 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3 :: Only",
 ]
+
+# The license for the project
 license = "MIT"
 license-files = ["LICENSE"]
 
+# metadata for the package
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
 dependencies = ["numpy>=2.0.0", "pytest>=8.3.5"]
 
@@ -43,9 +46,3 @@ dependencies = ["numpy>=2.0.0", "pytest>=8.3.5"]
 [project.urls]
 Homepage = "https://github.com/Sayan-001/ClumsyGrad"
 Issues = "https://github.com/Sayan-001/ClumsyGrad/issues"
-
-# [tool.setuptools.packages.find]
-# where = ["src"]
-
-
-

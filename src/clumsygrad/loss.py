@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from .grad import mae_backward, mse_backward
 from .tensor import Tensor
 
 
@@ -24,6 +23,8 @@ def mse_loss(pred: Tensor, target: Tensor) -> Tensor:
     
     if pred._shape != target._shape:
         raise ValueError("Predicted and target tensors must have the same shape for MSE loss.")
+    
+    from .grad import mse_backward
     
     diff = pred._data - target._data
     mse = np.mean(np.square(diff))
@@ -47,6 +48,8 @@ def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
     Returns:
         Tensor: The MAE loss tensor.
     """
+    
+    from .grad import mae_backward
     
     if pred._shape != target._shape:
         raise ValueError("Predicted and target tensors must have the same shape for MAE loss.")

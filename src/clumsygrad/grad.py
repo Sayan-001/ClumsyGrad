@@ -14,12 +14,11 @@ Returns:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple
 
 import numpy as np
 
-if TYPE_CHECKING:
-    from .tensor import Tensor
+from .tensor import Tensor
 
 GradientTuple = Tuple[np.ndarray, ...]
 """
@@ -106,7 +105,7 @@ def mul_scalar_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     .. math::
         \frac{\partial z}{\partial x} = c
     """
-    x = tensor._parents[0]
+    
     scalar = tensor._extra.get('scalar_value', 1)
     return (grad * scalar,)
 

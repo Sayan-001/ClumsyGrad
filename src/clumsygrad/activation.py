@@ -4,8 +4,6 @@ This module provides various activation functions for tensors.
 
 import numpy as np
 
-from .grad import (relu_backward, sigmoid_backward, softmax_backward,
-                   tanh_backward)
 from .tensor import Tensor
 
 
@@ -22,6 +20,8 @@ def tanh(tensor: Tensor) -> Tensor:
     Returns:
         Tensor: A new tensor containing the hyperbolic tangent of the input tensor.
     """
+    
+    from .grad import tanh_backward
     
     new_tensor = Tensor._create_node(
         data=np.tanh(tensor._data),
@@ -43,6 +43,8 @@ def relu(tensor: Tensor) -> Tensor:
     Returns:
         Tensor: A new tensor containing the ReLU activation of the input tensor.
     """
+    
+    from .grad import relu_backward
 
     new_tensor = Tensor._create_node(
         data=np.maximum(0, tensor._data),
@@ -64,6 +66,8 @@ def sigmoid(tensor: Tensor) -> Tensor:
     Returns:
         Tensor: A new tensor containing the sigmoid activation of the input tensor. 
     """
+    
+    from .grad import sigmoid_backward
     
     new_tensor = Tensor._create_node(
         data=1 / (1 + np.exp(-tensor._data)),
@@ -90,6 +94,8 @@ def softmax(tensor: Tensor, axis=-1) -> Tensor:
         The data in the input tensor is shifted by subtracting the maximum value along the specified axis
         to prevent overflow in the exponential computation.
     """
+    
+    from .grad import softmax_backward
     
     x_shifted = tensor._data - np.max(tensor._data, axis=axis, keepdims=True)
     exp_x = np.exp(x_shifted)
