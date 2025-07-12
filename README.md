@@ -76,7 +76,7 @@ from clumsygrad.math import exp, sin, cos, sum
 # Set tensor_type to PARAMETER to ensure gradients are tracked
 x = Tensor(1.0, tensor_type=TensorType.PARAMETER)
 y = Tensor(0.5, tensor_type=TensorType.PARAMETER)
-z = sum(exp(sin(x)**2 + cos(y)))
+z = exp(sin(x)**2 + cos(y))
 
 # Calculating dz/dx and dz/dy
 z.backward()
