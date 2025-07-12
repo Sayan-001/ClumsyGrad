@@ -28,7 +28,6 @@ Here's a brief overview of how to use the library:
 
 ```python
 from clumsygrad.tensor import Tensor, TensorType
-import numpy as np
 
 # Create a tensor from a list (defaults to TensorType.INPUT)
 a = Tensor([1.0, 2.0, 3.0])
