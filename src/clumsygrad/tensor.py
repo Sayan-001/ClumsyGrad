@@ -6,7 +6,6 @@ It also contains some utility functions for managing tensors and their gradients
 
 from __future__ import annotations
 
-import gc
 from enum import IntEnum
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
@@ -504,8 +503,6 @@ class Tensor:
             for node in topo_order:
                 if node._tensor_type == TensorType.INTERMEDIATE:
                     node._cleanup_references()
-                    
-            gc.collect()
             
 class TensorUtils:
     @staticmethod
