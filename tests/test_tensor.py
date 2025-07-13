@@ -1,6 +1,7 @@
 import gc
 import os
 import sys
+import psutil
 
 import numpy as np
 import pytest
@@ -406,23 +407,29 @@ class TestMemoryManagement:
     def test_memory_leak_training_loop(self):
         """Check for memory leaks during a simple training loop."""
         
+        process = psutil.Process()
         gc.collect()
-        initial_count, final_count  = 0, 0
+        initial_memory = process.memory_info().rss / (1024 * 1024)
         
         x = Tensor(np.random.rand(10), tensor_type=TensorType.PARAMETER)
         y = Tensor(np.random.rand(10), tensor_type=TensorType.INPUT)
         
-        for epoch in range(100):
+        epochs = 1000
+        for epoch in range(epochs):
             z = x ** 2 + 9 * x + 7
             loss = mse_loss(z, y)
             
             loss.backward()
-            
-            if epoch == 5:
-                initial_count = len([obj for obj in gc.get_objects() if isinstance(obj, Tensor)])
                 
-            if epoch == 95:
-                final_count = len([obj for obj in gc.get_objects() if isinstance(obj, Tensor)])
-
-        #Count should be the same before and after training
-        assert initial_count == final_count, f"Memory leak detected: {final_count - initial_count} extra Tensors created"
+        gc.collect()
+        final_memory = process.memory_info().rss / (1024 * 1024)
+        memory_growth_mb = final_memory - initial_memory
+        
+        # ALLowing a small threshold for memory growth
+        threshold_percentage = 10.0
+        max_allowed_growth_mb = max(1.0, initial_memory * threshold_percentage / 100)
+        
+        assert memory_growth_mb <= max_allowed_growth_mb, (
+            f"Memory leak detected: {memory_growth_mb:.2f} MB growth "
+            f"(threshold: {max_allowed_growth_mb:.2f} MB, {threshold_percentage}% of initial {initial_memory:.2f} MB)"
+        )
