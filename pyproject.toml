@@ -40,7 +40,7 @@ license-files = ["LICENSE"]
 
 # metadata for the package
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
-dependencies = ["numpy>=2.0.0", "pytest>=8.3.5"]
+dependencies = ["numpy>=2.0.0"]
 
 # List URLs that are relevant to the project
 [project.urls]
