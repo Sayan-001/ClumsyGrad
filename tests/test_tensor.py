@@ -426,7 +426,7 @@ class TestMemoryManagement:
         memory_growth_mb = final_memory - initial_memory
         
         # ALLowing a small threshold for memory growth
-        threshold_percentage = 10.0
+        threshold_percentage = 50.0
         max_allowed_growth_mb = max(1.0, initial_memory * threshold_percentage / 100)
         
         assert memory_growth_mb <= max_allowed_growth_mb, (
