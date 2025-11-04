@@ -86,13 +86,9 @@ print(x.grad) # [4.43963]
 print(y.grad) # [-2.34079]
 ```
 
-## Contributing
-
-Contributions are welcome! If you'd like to contribute, please feel free to fork the repository, make your changes, and submit a pull request. You can also open an issue if you find a bug.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
 
 ## Documentation
 
