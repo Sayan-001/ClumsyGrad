@@ -6,7 +6,9 @@
 
 A minimal Python library for automatic differentiation, built on top of NumPy. The `Tensor` class has support for creating and expanding a computation graph dynamically with each operation.
 
-![Computational Graph](./ComputationalGraph.png)
+<p align="center">
+  <img src="./ComputationalGraph.png" alt="Computation Graph" width="500" height="500" align="center">
+</p>
 
 ## Features
 
