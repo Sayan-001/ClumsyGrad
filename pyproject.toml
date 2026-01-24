@@ -8,11 +8,11 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 name = "clumsygrad"
 version = "0.2.0"
 authors = [
-  { name="Sayan Gupta", email="sayangupta540@gmail.com" },
+  { name="Sayan Gupta" },
 ]
 
 maintainers = [
-  { name="Sayan Gupta", email="sayangupta540@gmail.com"},
+  { name="Sayan Gupta" },
 ]
 
 description = "A minimal python library for automatic differentiation, built on top of NumPy."
