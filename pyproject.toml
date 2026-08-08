@@ -38,6 +38,19 @@ license-files = ["LICENSE"]
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
 dependencies = ["numpy>=2.5.0"]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.1.1",
+  "pytest-cov>=7.1.0",
+  "psutil>=7.2.2",
+  "black>=26.5.1",
+  "isort>=8.0.1",
+]
+docs = [
+  "sphinx>=9.1.0",
+  "sphinx-book-theme>=1.4.0",
+]
+
 # List URLs that are relevant to the project
 [project.urls]
 Homepage = "https://github.com/Sayan-001/ClumsyGrad"

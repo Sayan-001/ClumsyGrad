@@ -1,20 +1,24 @@
-# Minimal makefile for Sphinx documentation
-#
+# Makefile for building ClumsyGrad documentation
 
-# You can set these variables from the command line, and also
-# from the environment, for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
-BUILDDIR      = build
+SPHINXOPTS  ?=
+SPHINXBUILD ?= sphinx-build
+SOURCEDIR   = source
+BUILDDIR    = build
 
-# Put it first so that "make" without argument is like "make help".
+.PHONY: help html pdf clean
+
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "Available targets:"
+	@echo "  html   Build HTML documentation into $(BUILDDIR)/html"
+	@echo "  pdf    Build PDF documentation into $(BUILDDIR)/latex"
+	@echo "  clean  Remove the build directory"
 
-.PHONY: help Makefile
+html:
+	$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS)
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+pdf:
+	$(SPHINXBUILD) -b latex "$(SOURCEDIR)" "$(BUILDDIR)/latex" $(SPHINXOPTS)
+	cd "$(BUILDDIR)/latex" && pdflatex -interaction=nonstopmode ClumsyGrad.tex && pdflatex -interaction=nonstopmode ClumsyGrad.tex
+
+clean:
+	rm -rf "$(BUILDDIR)"

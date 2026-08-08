@@ -1,6 +1,6 @@
 @ECHO OFF
 
-REM Command file for Sphinx documentation
+REM Command file for building ClumsyGrad documentation
 
 pushd %~dp0
 
@@ -11,6 +11,10 @@ set SOURCEDIR=source
 set BUILDDIR=build
 
 if "%1" == "" goto help
+if "%1" == "html" goto html
+if "%1" == "pdf" goto pdf
+if "%1" == "clean" goto clean
+goto help
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -25,11 +29,27 @@ if errorlevel 9009 (
     exit /b 1
 )
 
-%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+:html
+%SPHINXBUILD% -b html %SOURCEDIR% %BUILDDIR%\html %SPHINXOPTS%
+goto end
+
+:pdf
+%SPHINXBUILD% -b latex %SOURCEDIR% %BUILDDIR%\latex %SPHINXOPTS%
+cd %BUILDDIR%\latex
+pdflatex -interaction=nonstopmode ClumsyGrad.tex
+pdflatex -interaction=nonstopmode ClumsyGrad.tex
+cd %~dp0
+goto end
+
+:clean
+rmdir /s /q %BUILDDIR%
 goto end
 
 :help
-%SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+echo.Available targets:
+echo.  html   Build HTML documentation into %BUILDDIR%\html
+echo.  pdf    Build PDF documentation into %BUILDDIR%\latex
+echo.  clean  Remove the build directory
 
 :end
 popd
