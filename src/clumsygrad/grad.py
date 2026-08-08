@@ -12,15 +12,11 @@ Returns:
     Tuple of gradients for each parent tensor
 """
 
-from __future__ import annotations
-
-from typing import Tuple
-
 import numpy as np
 
 from .tensor import Tensor
 
-GradientTuple = Tuple[np.ndarray, ...]
+GradientTuple = tuple[np.ndarray, ...]
 """
 A tuple of gradients for each parent tensor.
 """

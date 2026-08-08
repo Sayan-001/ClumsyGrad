@@ -2,8 +2,6 @@
 This module provides functions to compute various loss functions.
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 from .tensor import Tensor

@@ -4,23 +4,16 @@ It supports basic tensor operations, tracks gradients, and can be used to build 
 It also contains some utility functions for managing tensors and their gradients.
 """
 
-from __future__ import annotations
-
+from collections.abc import Callable
 from enum import IntEnum
-from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
 
 class TensorType(IntEnum):
     """
-    Defines tensor types in the computational graph. Each type controls gradient computation and tensor behavior.
-
-    Examples:
-
-        >>> input_tensor = Tensor([1, 2, 3], tensor_type=TensorType.INPUT)
-        >>> param_tensor = Tensor([0.5, 0.3], tensor_type=TensorType.PARAMETER)
-        >>> result = input_tensor + param_tensor  # Creates INTERMEDIATE tensor
+    Defines tensor types in the computational graph.
+    Each type controls gradient computation and tensor behavior.
     """
 
     INPUT = 0
@@ -58,22 +51,22 @@ class Tensor:
 
     __slots__ = (
         "_data",
-        "_shape",
-        "_id",
-        "_grad_fn",
-        "_grad",
-        "_parents",
         "_extra",
-        "_tensor_type",
+        "_grad",
+        "_grad_fn",
+        "_id",
+        "_parents",
         "_requires_grad",
+        "_shape",
+        "_tensor_type",
     )
 
     @staticmethod
     def _create_node(
         data: np.ndarray | list | float,
-        grad_fn: Optional[Callable],
-        parents: Tuple[Tensor, ...],
-        extra: Optional[dict] = None,
+        grad_fn: Callable | None,
+        parents: tuple[Tensor, ...],
+        extra: dict | None = None,
     ) -> Tensor:
         """
         Creates a new tensor node in the computational graph.
@@ -198,7 +191,7 @@ class Tensor:
         else:
             self._requires_grad = False
 
-        self._parents: Tuple[Tensor, ...] = ()
+        self._parents: tuple[Tensor, ...] = ()
 
         self._id = Tensor._id_counter
         Tensor._id_counter += 1
@@ -225,7 +218,7 @@ class Tensor:
         return self._shape
 
     @property
-    def grad(self) -> Optional[np.ndarray]:
+    def grad(self) -> np.ndarray | None:
         """Return the gradient of the tensor."""
         return self._grad
 
@@ -259,7 +252,7 @@ class Tensor:
 
         return new_tensor
 
-    def __add__(self, other: Union[Tensor, float]) -> Tensor:
+    def __add__(self, other: Tensor | float) -> Tensor:
         from .grad import add_backward, add_broadcast_backward, add_scalar_backward
 
         if isinstance(other, Tensor):
@@ -296,10 +289,10 @@ class Tensor:
 
         return new_tensor
 
-    def __radd__(self, other: Union[Tensor, float]) -> Tensor:
+    def __radd__(self, other: Tensor | float) -> Tensor:
         return self.__add__(other)
 
-    def __sub__(self, other: Union[Tensor, float]) -> Tensor:
+    def __sub__(self, other: Tensor | float) -> Tensor:
         from .grad import sub_backward, sub_broadcast_backward, sub_scalar_backward
 
         if isinstance(other, Tensor):
@@ -336,7 +329,7 @@ class Tensor:
 
         return new_tensor
 
-    def __mul__(self, other: Union[Tensor, float]) -> Tensor:
+    def __mul__(self, other: Tensor | float) -> Tensor:
         from .grad import mul_backward, mul_broadcast_backward, mul_scalar_backward
 
         if isinstance(other, Tensor):
@@ -373,7 +366,7 @@ class Tensor:
 
         return new_tensor
 
-    def __rmul__(self, other: Union[Tensor, float]) -> Tensor:
+    def __rmul__(self, other: Tensor | float) -> Tensor:
         return self.__mul__(other)
 
     def __matmul__(self, other: Tensor) -> Tensor:
@@ -418,7 +411,7 @@ class Tensor:
         )
         return new_tensor
 
-    def reshape(self, new_shape: Tuple[int, ...]) -> Tensor:
+    def reshape(self, new_shape: tuple[int, ...]) -> Tensor:
         """
         Reshape the tensor to a new shape.
 
@@ -448,7 +441,7 @@ class Tensor:
         return new_tensor
 
     def backward(
-        self, gradient: Optional[np.ndarray | float] = None, keep_graph: bool = False
+        self, gradient: np.ndarray | float | None = None, keep_graph: bool = False
     ):
         """
         Performs the backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
@@ -494,8 +487,8 @@ class Tensor:
         else:
             self._grad += gradient
 
-        topo_order: List[Tensor] = []
-        visited: Set[int] = set()
+        topo_order: list[Tensor] = []
+        visited: set[int] = set()
 
         def build_topo(node: Tensor):
             if node._id in visited or not node._requires_grad:
@@ -541,7 +534,7 @@ class Tensor:
 
 class TensorUtils:
     @staticmethod
-    def get_parameters(tensor: Tensor) -> List[Tensor]:
+    def get_parameters(tensor: Tensor) -> list[Tensor]:
         """
         Collect all parameters in the computational graph starting from the given tensor.
 
@@ -552,9 +545,9 @@ class TensorUtils:
             A list of Tensor objects that are parameters in the graph.
         """
 
-        parameters: List[Tensor] = []
+        parameters: list[Tensor] = []
         stack = [tensor]
-        visited: Set[int] = set()
+        visited: set[int] = set()
 
         while stack:
             current = stack.pop()
@@ -571,7 +564,7 @@ class TensorUtils:
         return parameters
 
     @staticmethod
-    def count_by_type(tensor: Tensor) -> Dict[TensorType, int]:
+    def count_by_type(tensor: Tensor) -> dict[TensorType, int]:
         """
         Counts the number of tensors of each type in the computational graph starting from the given tensor.
 
@@ -582,14 +575,14 @@ class TensorUtils:
             A dictionary with counts of each tensor type (INPUT, PARAMETER, INTERMEDIATE).
         """
 
-        counts: Dict[TensorType, int] = {
+        counts: dict[TensorType, int] = {
             TensorType.INPUT: 0,
             TensorType.PARAMETER: 0,
             TensorType.INTERMEDIATE: 0,
         }
 
-        stack: List[Tensor] = [tensor]
-        visited: Set[int] = set()
+        stack: list[Tensor] = [tensor]
+        visited: set[int] = set()
 
         while stack:
             current = stack.pop()

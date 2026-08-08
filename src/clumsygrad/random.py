@@ -1,11 +1,9 @@
-from typing import Tuple
-
 import numpy as np
 
 from .tensor import Tensor, TensorType
 
 
-def rand(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> Tensor:
+def rand(shape: tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> Tensor:
     """
     Create a new tensor with random values.
 
@@ -21,7 +19,7 @@ def rand(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> 
     return Tensor(data=data, tensor_type=tensor_type)
 
 
-def randn(shape: Tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> Tensor:
+def randn(shape: tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> Tensor:
     """
     Create a new tensor with random values from a normal distribution.
 

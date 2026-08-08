@@ -3,7 +3,6 @@ This module contains common optimizers for optimizing parameters in a computatio
 """
 
 from abc import ABC
-from typing import List
 
 import numpy as np
 
@@ -15,7 +14,7 @@ class Optimizer(ABC):
     Abstract base class for all optimizers.
     """
 
-    def __init__(self, parameters: List[Tensor]):
+    def __init__(self, parameters: list[Tensor]):
         self.parameters = [
             p for p in parameters if p._tensor_type == TensorType.PARAMETER
         ]
@@ -42,12 +41,12 @@ class SGD(Optimizer):
     Reference: Robbins, H., & Monro, S. (1951). A stochastic approximation method.
     """
 
-    def __init__(self, parameters: List[Tensor], lr: float = 0.01):
+    def __init__(self, parameters: list[Tensor], lr: float = 0.01):
         """
         Initialize the SGD optimizer.
 
         Args:
-            parameters (List[Tensor]): List of parameter tensors to optimize.
+            parameters (list[Tensor]): List of parameter tensors to optimize.
             lr (float): Learning rate for the optimizer. Default is 0.01.
         """
 
@@ -74,7 +73,7 @@ class Adam(Optimizer):
 
     def __init__(
         self,
-        parameters: List[Tensor],
+        parameters: list[Tensor],
         lr: float = 0.001,
         beta1: float = 0.9,
         beta2: float = 0.999,
@@ -84,7 +83,7 @@ class Adam(Optimizer):
         Initialize the Adam optimizer.
 
         Args:
-            parameters (List[Tensor]): List of parameter tensors to optimize.
+            parameters (list[Tensor]): List of parameter tensors to optimize.
             lr (float): Learning rate. Default is 0.001.
             beta1 (float): Exponential decay rate for first moment estimates. Default is 0.9.
             beta2 (float): Exponential decay rate for second moment estimates. Default is 0.999.

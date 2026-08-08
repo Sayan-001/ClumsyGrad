@@ -12,11 +12,11 @@ from . import activation, grad, loss, math, optimizer, random, tensor
 __version__ = _version("clumsygrad")
 
 __all__ = [
-    "tensor",
-    "random",
     "activation",
     "grad",
     "loss",
     "math",
     "optimizer",
+    "random",
+    "tensor",
 ]
