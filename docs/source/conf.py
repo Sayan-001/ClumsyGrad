@@ -2,6 +2,7 @@
 
 import os
 import sys
+from importlib.metadata import version as _version
 
 # 2 levels from docs/source to reach project root
 sys.path.insert(0, os.path.abspath('../../'))
@@ -12,8 +13,8 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 project = 'ClumsyGrad'
 copyright = '2025, Sayan Gupta'
 author = 'Sayan Gupta'
-release = '0.2.0'  
-version = '0.2.0'  
+release = _version('clumsygrad')
+version = release
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -27,10 +28,6 @@ extensions = [
     'sphinx.ext.ifconfig',         # Conditional content
 ]
 
-mathjax_config = {
-    'extensions': ['tex2jax.js'],
-    'jax': ['input/TeX', 'output/HTML-CSS'],
-}
 
 # Napoleon settings
 napoleon_google_docstring = True

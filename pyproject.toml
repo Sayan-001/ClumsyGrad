@@ -17,20 +17,16 @@ maintainers = [
 
 description = "A minimal python library for automatic differentiation, built on top of NumPy."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.14"
 classifiers = [
   "Development Status :: 3 - Alpha",
 
   "Intended Audience :: Developers",
-  "Intended Audience :: Science/Research", 
+  "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3 :: Only",
 ]
 
@@ -40,9 +36,15 @@ license-files = ["LICENSE"]
 
 # metadata for the package
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
-dependencies = ["numpy>=2.0.0"]
+dependencies = ["numpy>=2.5.0"]
 
 # List URLs that are relevant to the project
 [project.urls]
 Homepage = "https://github.com/Sayan-001/ClumsyGrad"
 Issues = "https://github.com/Sayan-001/ClumsyGrad/issues"
+
+[tool.black]
+target-version = ["py314"]
+
+[tool.isort]
+profile = "black"

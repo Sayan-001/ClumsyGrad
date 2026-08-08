@@ -63,7 +63,7 @@ To install ClumsyGrad, you can use pip:
 
 
 .. note::
-   ClumsyGrad requires Python 3.9+ and NumPy.
+   ClumsyGrad requires Python 3.14+ and NumPy 2.5+.
 
 Performance Notes
 =================
