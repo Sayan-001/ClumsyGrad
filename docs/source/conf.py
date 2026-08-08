@@ -54,20 +54,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 master_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_book_theme'
+html_theme = 'shibuya'
 
 html_theme_options = {
-    "repository_url": "https://github.com/ggsayan/ClumsyGrad",
-    "repository_branch": "main",
-    "use_repository_button": True,
-    "show_toc_level": 2,
-    "navigation_with_keys": False,
-    "show_navbar_depth": 1,
-    "logo": {
-        "text": "ClumsyGrad",
-    },
-    "extra_footer": "<p>Built with ❤️ for educational purposes</p>",
-    "search_bar_text": "Search the docs...",
+    "accent_color": "ruby",
+    "github_url": "https://github.com/ggsayan/ClumsyGrad",
 }
 
 html_static_path = ['_static']
