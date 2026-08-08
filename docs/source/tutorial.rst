@@ -25,13 +25,13 @@ Tensor Types
 
 ClumsyGrad supports three types of tensors:
 
-**INPUT**: Data tensors that don't require gradients
+**INPUT**: Data tensors that don't require gradients.
    Used for input data, targets, and constants.
 
-**PARAMETER**: Learnable parameters that require gradients
+**PARAMETER**: Learnable parameters that require gradients.
    Used for weights, biases, and other trainable parameters.
 
-**INTERMEDIATE**: Temporary tensors created during operations
+**INTERMEDIATE**: Temporary tensors created during operations.
    Automatically created during computations.
 
 Chapter 2: Basic Operations
@@ -117,6 +117,6 @@ Chain Rule
    print(f"Expected gradient: {expected_grad}")
 
 Carry On
-==========
+========
 
-* Explore the :doc:`api_reference` for detailed function documentation
+* Explore the :doc:`api_reference` for detailed function documentation.

@@ -132,7 +132,7 @@ def sin(tensor: Tensor) -> Tensor:
 
 def cos(tensor: Tensor) -> Tensor:
     """
-    Compute cosine of tensor.
+    Compute the cosine of the tensor.
     """
 
     from .grad import cos_backward
@@ -147,7 +147,7 @@ def cos(tensor: Tensor) -> Tensor:
 
 def tan(tensor: Tensor) -> Tensor:
     """
-    Compute tangent of tensor.
+    Compute the tangent of the tensor.
     """
 
     from .grad import tan_backward

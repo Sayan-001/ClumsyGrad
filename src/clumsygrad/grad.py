@@ -1,7 +1,7 @@
 """
 This module contains backward functions for various tensor operations in a computational graph.
 
-All functions have a generic signature that takes a tensor and the any/tensor's gradient as inputs,
+All functions have a generic signature that takes a tensor and the tensor's gradient as inputs,
 and returns a tuple of gradients for each parent tensor.
 
 Args:
@@ -26,7 +26,7 @@ A tuple of gradients for each parent tensor.
 """
 
 """
-Elemetary backward functions for tensor operations.
+Elementary backward functions for tensor operations.
 """
 
 
@@ -160,9 +160,9 @@ def negate_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
 def abs_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for absolute value operation.
-    
+
     For :math:`z = |x|`:
-    
+
     .. math::
         \frac{\partial z}{\partial x} = \text{sign}(x) = \begin{cases}
         1 & \text{if } x > 0 \\
@@ -198,15 +198,15 @@ Backward functions for reduction operations.
 def sum_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for sum operation.
-    
+
     For :math:`z = \sum_{i \in \text{axis}} x_i`:
-    
+
     .. math::
         \frac{\partial z}{\partial x_i} = \begin{cases}
         1 & \text{if } i \in \text{axis} \\
         0 & \text{otherwise}
         \end{cases}
-    
+
     This function handles dimension reduction by broadcasting gradients back to the original shape.
     """
 
@@ -234,15 +234,15 @@ def sum_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
 def mean_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for mean operation.
-    
+
     For :math:`z = \frac{1}{n}\sum_{i \in \text{axis}} x_i`:
-    
+
     .. math::
         \frac{\partial z}{\partial x_i} = \begin{cases}
         \frac{1}{n} & \text{if } i \in \text{axis} \\
         0 & \text{otherwise}
         \end{cases}
-    
+
     where :math:`n` is the number of elements being averaged.
     """
     input_shape = tensor._extra.get("input_shape")
@@ -358,9 +358,9 @@ Backward functions for activation functions.
 def relu_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for ReLU activation.
-    
+
     For :math:`z = \text{ReLU}(x) = \max(0, x)`:
-    
+
     .. math::
         \frac{\partial z}{\partial x} = \begin{cases}
         1 & \text{if } x > 0 \\
@@ -399,17 +399,17 @@ def tanh_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
 def softmax_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for softmax activation.
-    
+
     For :math:`z_i = \frac{e^{x_i}}{\sum_{j} e^{x_j}}`:
-    
+
     .. math::
         \frac{\partial z_i}{\partial x_j} = \begin{cases}
         z_i(1 - z_i) & \text{if } i = j \\
         -z_i z_j & \text{if } i \neq j
         \end{cases}
-    
+
     The gradient computation simplifies to:
-    
+
     .. math::
         \frac{\partial L}{\partial x} = z \odot \left(\text{grad} - \sum(z \odot \text{grad})\right)
     """
@@ -466,7 +466,7 @@ def mae_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
 
 
 """
-Backward functions fro broadcasting operations.
+Backward functions for broadcasting operations.
 """
 
 

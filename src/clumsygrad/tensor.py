@@ -26,7 +26,7 @@ class TensorType(IntEnum):
     INPUT = 0
     """
     Input tensor that feeds data into the computation graph.
-    
+
     Use when:
     - You do not need gradients for this tensor.
     - It should be a constant or a placeholder within the computation graph.
@@ -35,16 +35,16 @@ class TensorType(IntEnum):
     PARAMETER = 1
     """
     Trainable parameter tensor (weights, biases).
-    
+
     Use when:
-    - You want calculate gradients for this tensor.
+    - You want to calculate gradients for this tensor.
     - You want to optimize this tensor during training.
     """
 
     INTERMEDIATE = 2
     """
     Intermediate computation result.
-    
+
     You are recommended not to use this type.
     """
 
@@ -451,7 +451,7 @@ class Tensor:
         self, gradient: Optional[np.ndarray | float] = None, keep_graph: bool = False
     ):
         """
-        backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
+        Performs the backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
         Only the current tensor and all INPUT/PARAMETER tensors will be retained in memory.
 
         Args:

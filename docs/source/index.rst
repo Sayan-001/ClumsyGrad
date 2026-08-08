@@ -19,10 +19,10 @@ Key Features
 ============
 
 * **Lightweight Design**
-   Minimal dependencies - built primarily on NumPy
+   Minimal dependencies - built primarily on NumPy.
 
 * **Minimalist Architecture**
-   Easy to understand and modify for experimentation
+   Easy to understand and modify for experimentation.
 
 Quick Start Example
 ===================
@@ -69,7 +69,7 @@ Performance Notes
 =================
 
 .. warning::
-   ClumsyGrad is mainly designed by me for educational purposes, and may not be completely optimzed for performance.
+   ClumsyGrad is mainly designed by me for educational purposes, and may not be completely optimized for performance.
 
 Contributing
 ============
@@ -77,7 +77,7 @@ Contributing
 ClumsyGrad welcomes contributions! Whether you're:
 
 * **Reporting bugs**
-* **Suggesting features** 
+* **Suggesting features**
 * **Improving documentation**
 * **Contributing code**
 

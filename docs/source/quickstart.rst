@@ -69,7 +69,7 @@ Tensors support various arithmetic operations, including addition, subtraction, 
 Automatic Differentiation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Automatic Differentiation (AD) works by decomposing a function into a sequence of elementary operations 
+Automatic Differentiation (AD) works by decomposing a function into a sequence of elementary operations
 and applying the chain rule locally at each step.
 
 .. code-block:: python
