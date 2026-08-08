@@ -53,8 +53,8 @@ docs = [
 
 # List URLs that are relevant to the project
 [project.urls]
-Homepage = "https://github.com/Sayan-001/ClumsyGrad"
-Issues = "https://github.com/Sayan-001/ClumsyGrad/issues"
+Homepage = "https://github.com/ggsayan/ClumsyGrad"
+Issues = "https://github.com/ggsayan/ClumsyGrad/issues"
 
 [tool.black]
 target-version = ["py314"]

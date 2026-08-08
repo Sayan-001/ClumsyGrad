@@ -57,7 +57,7 @@ master_doc = 'index'
 html_theme = 'sphinx_book_theme'
 
 html_theme_options = {
-    "repository_url": "https://github.com/Sayan-001/ClumsyGrad",
+    "repository_url": "https://github.com/ggsayan/ClumsyGrad",
     "repository_branch": "main",
     "use_repository_button": True,
     "show_toc_level": 2,
