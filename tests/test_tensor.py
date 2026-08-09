@@ -164,6 +164,43 @@ class TestMatrixOperations:
         assert b is a
 
 
+class TestIndexing:
+    """Test tensor indexing/slicing via __getitem__."""
+
+    def test_integer_index(self):
+        a = Tensor([10.0, 20.0, 30.0], tensor_type=TensorType.PARAMETER)
+        b = a[1]
+
+        assert b.data == np.float32(20.0)
+        assert b.requires_grad
+
+    def test_slice(self):
+        a = Tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], tensor_type=TensorType.PARAMETER)
+        b = a[:, 1:]
+
+        np.testing.assert_array_equal(b.data, np.array([[2.0, 3.0], [5.0, 6.0]]))
+
+    def test_boolean_mask(self):
+        a = Tensor([1.0, -2.0, 3.0, -4.0], tensor_type=TensorType.PARAMETER)
+        b = a[a.data > 0]
+
+        np.testing.assert_array_equal(b.data, np.array([1.0, 3.0]))
+
+    def test_backward_scatters_gradient_to_original_shape(self):
+        a = Tensor([1.0, 2.0, 3.0, 4.0], tensor_type=TensorType.PARAMETER)
+        b = a[1:3]
+        b.backward(np.array([10.0, 20.0], dtype=np.float32))
+
+        np.testing.assert_array_equal(a.grad, np.array([0.0, 10.0, 20.0, 0.0]))
+
+    def test_backward_accumulates_repeated_indices(self):
+        a = Tensor([1.0, 2.0, 3.0], tensor_type=TensorType.PARAMETER)
+        b = a[np.array([0, 0, 2])]
+        b.backward(np.array([1.0, 2.0, 5.0], dtype=np.float32))
+
+        np.testing.assert_array_equal(a.grad, np.array([3.0, 0.0, 5.0]))
+
+
 class TestBroadcastingOperations:
     """Tests for broadcasting operations and their backward functions."""
 

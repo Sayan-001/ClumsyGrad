@@ -188,6 +188,26 @@ def reshape_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     return (grad.reshape(input_shape),)
 
 
+def getitem_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
+    r"""
+    Backward function for indexing/slicing operation.
+
+    For :math:`z = x[\text{key}]`, the gradient is scattered back into a
+    zero tensor shaped like :math:`x`, at the same `key` positions.
+    `np.add.at` is used rather than plain assignment so that indices
+    repeated by fancy/boolean indexing accumulate their gradients instead
+    of overwriting one another.
+    """
+    key = tensor._extra["key"]
+    original_shape = tensor._extra.get("original_shape")
+    assert original_shape is not None
+
+    grad_x = np.zeros(original_shape, dtype=grad.dtype)
+    np.add.at(grad_x, key, grad)
+
+    return (grad_x,)
+
+
 """
 Backward functions for reduction operations.
 """

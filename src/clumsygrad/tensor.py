@@ -460,6 +460,27 @@ class Tensor:
         )
         return new_tensor
 
+    def __getitem__(self, key: Any) -> Tensor:
+        """
+        Index or slice the tensor (e.g. `t[0]`, `t[1:3]`, `t[:, 0]`, `t[mask]`).
+
+        Args:
+            key: Any NumPy-compatible index: an int, slice, tuple of
+                ints/slices, or an array/boolean mask.
+
+        Returns:
+            A new Tensor containing the selected elements.
+        """
+        from .grad import getitem_backward
+
+        new_tensor = Tensor._create_node(
+            data=self._data[key],
+            grad_fn=getitem_backward,
+            parents=(self,),
+            extra={"key": key, "original_shape": self._shape},
+        )
+        return new_tensor
+
     def reshape(self, new_shape: tuple[int, ...]) -> Tensor:
         """
         Reshape the tensor to a new shape.

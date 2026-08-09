@@ -57,6 +57,15 @@ CASES = {
     "power": (lambda t: t**3, [1.0, 2.0, 1.5]),
     "negate": (lambda t: -t, [1.0, -2.0, 3.0]),
     "reshape": (lambda t: t.reshape((3, 2)), [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]),
+    "getitem_index": (lambda t: t[1], [1.0, 2.0, 3.0]),
+    "getitem_slice": (
+        lambda t: t[:, 1:],
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+    ),
+    "getitem_repeated_indices": (
+        lambda t: t[np.array([0, 0, 1])],
+        [1.0, 2.0, 3.0],
+    ),
     "sum_no_axis": (lambda t: cg_math.sum(t), [1.0, 2.0, 3.0]),
     "sum_with_axis": (
         lambda t: cg_math.sum(t, axis=0),
