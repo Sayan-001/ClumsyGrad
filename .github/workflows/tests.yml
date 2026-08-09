@@ -19,7 +19,7 @@ jobs:
           pip install -e ".[dev]"
       - name: Test with pytest
         run: |
-          pytest
+          pytest --cov=src/clumsygrad --cov-report=term-missing
 
   typecheck:
     runs-on: ubuntu-latest

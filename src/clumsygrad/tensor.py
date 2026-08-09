@@ -126,14 +126,14 @@ class Tensor:
         Determine the broadcasted shape for two tensor shapes.
 
         Args:
-            shape1: Shape of the first tensor
-            shape2: Shape of the second tensor
+            shape1: Shape of the first tensor.
+            shape2: Shape of the second tensor.
 
         Returns:
             The broadcasted shape
 
         Raises:
-            ValueError: If shapes are not broadcastable
+            ValueError: If shapes are not broadcastable.
         """
         # Pad shorter shape with 1s on the left
         len_diff = abs(len(shape1) - len(shape2))
@@ -147,9 +147,7 @@ class Tensor:
         for dim1, dim2 in zip(shape1, shape2):
             if dim1 == 1:
                 result_shape.append(dim2)
-            elif dim2 == 1:
-                result_shape.append(dim1)
-            elif dim1 == dim2:
+            elif dim2 == 1 or dim2 == dim1:
                 result_shape.append(dim1)
             else:
                 raise ValueError(f"Cannot broadcast shapes {shape1} and {shape2}")
@@ -162,11 +160,11 @@ class Tensor:
         Check if two shapes can be broadcasted together.
 
         Args:
-            shape1: Shape of the first tensor
-            shape2: Shape of the second tensor
+            shape1: Shape of the first tensor.
+            shape2: Shape of the second tensor.
 
         Returns:
-            True if shapes are broadcastable, False otherwise
+            True if shapes are broadcastable, False otherwise.
         """
         try:
             Tensor._broadcast_shapes(shape1, shape2)
@@ -387,7 +385,7 @@ class Tensor:
 
     def __matmul__(self, other: Tensor) -> Tensor:
         if not isinstance(other, Tensor):
-            raise TypeError("Right operand must be a Tensor for matrix multiplication.")
+            raise TypeError(f"Right operand must be a Tensor, got {type(other).__name__}")
 
         if len(self._shape) < 2 or len(other._shape) < 2:
             raise ValueError("Matrix multiplication requires at least 2D tensors.")
@@ -473,10 +471,11 @@ class Tensor:
         Note:
             - Setting `keep_graph=True` inside a training loop can lead to memory leaks.
 
-        Example:
-            >>> t = Tensor(np.array([1.0, 2.0, 3.0]), tensor_type=TensorType.PARAMETER)
-            >>> y = t ** 2 + 3 * t + 2
-            >>> y.backward()
+        ```python
+        t = Tensor(np.array([1.0, 2.0, 3.0]), tensor_type=TensorType.PARAMETER)
+        y = t ** 2 + 3 * t + 2
+        y.backward()
+        ```
         """
 
         if not self._requires_grad:
@@ -579,8 +578,7 @@ class TensorUtils:
             if current._tensor_type == TensorType.PARAMETER:
                 parameters.append(current)
 
-            for parent in current._parents:
-                stack.append(parent)
+            stack.extend(current._parents)
 
         return parameters
 
@@ -612,8 +610,6 @@ class TensorUtils:
             visited.add(current._id)
 
             counts[current._tensor_type] += 1
-
-            for parent in current._parents:
-                stack.append(parent)
+            stack.extend(current._parents)
 
         return counts

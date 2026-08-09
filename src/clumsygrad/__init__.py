@@ -7,13 +7,14 @@ For detailed documentation, refer: `https://clumsygrad.readthedocs.io/en/latest/
 
 from importlib.metadata import version as _version
 
-from . import activation, grad, loss, math, optimizer, random, tensor
+from . import activation, grad, gradcheck, loss, math, optimizer, random, tensor
 
 __version__ = _version("clumsygrad")
 
 __all__ = [
     "activation",
     "grad",
+    "gradcheck",
     "loss",
     "math",
     "optimizer",

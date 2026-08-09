@@ -377,7 +377,9 @@ def sigmoid_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     .. math::
         \frac{\partial z}{\partial x} = \sigma(x) \cdot (1 - \sigma(x))
     """
-    sigmoid_output = 1 / (1 + np.exp(-tensor._data))
+    # `tensor` is the output node of the forward sigmoid call, so `tensor._data`
+    # is already sigmoid(x) -- no need to recompute it from the input.
+    sigmoid_output = tensor._data
     return (grad * sigmoid_output * (1 - sigmoid_output),)
 
 
@@ -430,16 +432,17 @@ def mse_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for Mean Squared Error loss.
 
-    For :math:`L = (\text{pred} - \text{target})^2`:
+    For :math:`L = \frac{1}{n}\sum (\text{pred} - \text{target})^2`:
 
     .. math::
-        \frac{\partial L}{\partial \text{pred}} = 2(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{pred}} = \frac{2}{n}(\text{pred} - \text{target})
 
-        \frac{\partial L}{\partial \text{target}} = -2(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{target}} = -\frac{2}{n}(\text{pred} - \text{target})
     """
     pred, target = tensor._parents
     diff = pred._data - target._data
-    return (2 * diff * grad, -2 * diff * grad)
+    n = diff.size
+    return (2 * diff * grad / n, -2 * diff * grad / n)
 
 
 def mae_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
