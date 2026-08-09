@@ -90,8 +90,9 @@ def softmax(tensor: Tensor, axis: int = -1) -> Tensor:
         Tensor: A new tensor containing the softmax activation of the input tensor.
 
     Note:
-        The data in the input tensor is shifted by subtracting the maximum value along the specified axis
-        to prevent overflow in the exponential computation.
+        The data in the input tensor is shifted by subtracting the maximum
+        value along the specified axis to prevent overflow in the exponential
+        computation.
     """
 
     from .grad import softmax_backward

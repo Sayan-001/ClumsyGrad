@@ -51,21 +51,25 @@ from clumsygrad.tensor import Tensor, TensorType
 from clumsygrad.math import exp, sin
 
 x = Tensor([1.0, 2.0, 3.0])
-y = exp(x**2 + 3*x + 2)
+y = exp(x**2 + 3 * x + 2)
 z = sin(y)
 
 # As implicitly tensors are of type INPUT, the computational graph is not built, signified by
 # grad_fn = None.
-print(z) # Tensor(id=6, shape=(3,), tensor_type=INPUT, grad_fn=None, requires_grad=False)
-print(z.data) # [0.9648606  0.99041617 0.83529955]
+print(z)
+# Tensor(id=6, shape=(3,), tensor_type=INPUT, grad_fn=None, requires_grad=False)
+print(z.data)
+# [0.9648606  0.99041617 0.83529955]
 
 x = Tensor([1.0, 2.0, 3.0], tensor_type=TensorType.PARAMETER)
-y = exp(x**2 + 3*x + 2)
+y = exp(x**2 + 3 * x + 2)
 z = sin(y)
 
 # Now, the tensor is of type PARAMETER, and the computational graph is built.
-print(z) # Tensor(id=13, shape=(3,), tensor_type=INTERMEDIATE, grad_fn=sin_backward, requires_grad=True)
-print(z.data) # [0.9648606  0.99041617 0.83529955]
+print(z)
+# Tensor(id=13, shape=(3,), tensor_type=INTERMEDIATE, grad_fn=sin_backward, requires_grad=True)
+print(z.data)
+# [0.9648606  0.99041617 0.83529955]
 ```
 
 ### Automatic Differentiation (Backpropagation)
@@ -79,15 +83,15 @@ from clumsygrad.math import exp, sin, cos, sum
 # Set tensor_type to PARAMETER to ensure gradients are tracked
 x = Tensor(1.0, tensor_type=TensorType.PARAMETER)
 y = Tensor(0.5, tensor_type=TensorType.PARAMETER)
-z = exp(sin(x)**2 + cos(y))
+z = exp(sin(x) ** 2 + cos(y))
 
 # Calculating dz/dx and dz/dy
 z.backward()
 
 # Value of dz/dx
-print(x.grad) # [4.43963]
+print(x.grad)  # [4.43963]
 # Value of dz/dy
-print(y.grad) # [-2.34079]
+print(y.grad)  # [-2.34079]
 ```
 
 ## License

@@ -1,6 +1,7 @@
 """
 This module contains the Tensor class implementation for automatic differentiation.
-It supports basic tensor operations, tracks gradients, and can be used to build computational graphs for backpropagation.
+It supports basic tensor operations, tracks gradients, and can be used to
+build computational graphs for backpropagation.
 It also contains some utility functions for managing tensors and their gradients.
 """
 
@@ -9,6 +10,7 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
 
 if TYPE_CHECKING:
     from .grad import GradientTuple
@@ -48,7 +50,8 @@ class TensorType(IntEnum):
 
 class Tensor:
     """
-    The main Tensor class, comprising the core functionality for creation and manipulation of tensors in the computational graph.
+    The main Tensor class, comprising the core functionality for creation
+    and manipulation of tensors in the computational graph.
     """
 
     _id_counter = 0
@@ -185,12 +188,14 @@ class Tensor:
 
         Args:
             data: The initial data for the tensor.
-            tensor_type (TensorType): The type of the tensor, as TensorType.INPUT/PARAMETER/INTERMEDIATE (default is INPUT).
+            tensor_type (TensorType): The type of the tensor, as
+                TensorType.INPUT/PARAMETER/INTERMEDIATE (default is INPUT).
 
         Note:
             - The tensor will not track/propagate gradients if it is of type INPUT.
             - If it is of type PARAMETER, it will be treated as a trainable parameter.
-            - Do not use INTERMEDIATE type unless you are explicitly creating a node in the graph.
+            - Do not use INTERMEDIATE type unless you are explicitly creating
+              a node in the graph.
             - By default, data type is set to float32.
         """
 
@@ -385,7 +390,9 @@ class Tensor:
 
     def __matmul__(self, other: Tensor) -> Tensor:
         if not isinstance(other, Tensor):
-            raise TypeError(f"Right operand must be a Tensor, got {type(other).__name__}")
+            raise TypeError(
+                f"Right operand must be a Tensor, got {type(other).__name__}"
+            )
 
         if len(self._shape) < 2 or len(other._shape) < 2:
             raise ValueError("Matrix multiplication requires at least 2D tensors.")
@@ -436,7 +443,8 @@ class Tensor:
             A new Tensor with the reshaped data.
 
         Raises:
-            ValueError: If the new shape does not have the same number of elements as the original shape.
+            ValueError: If the new shape does not have the same number of
+                elements as the original shape.
         """
 
         if np.prod(new_shape) != np.prod(self._shape):
@@ -458,15 +466,21 @@ class Tensor:
         self, gradient: np.ndarray | float | None = None, keep_graph: bool = False
     ) -> None:
         """
-        Performs the backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
-        Only the current tensor and all INPUT/PARAMETER tensors will be retained in memory.
+        Performs the backward pass to compute gradients. Once the backward
+        pass is completed, the graph is freed from memory unless
+        `keep_graph` is set to True.
+        Only the current tensor and all INPUT/PARAMETER tensors will be
+        retained in memory.
 
         Args:
-            gradient: Optional gradient to start the backward pass. If None, it assumes a scalar output and uses ones.
-            keep_graph: If True, keeps the computational graph for further backward passes.
+            gradient: Optional gradient to start the backward pass. If None,
+                it assumes a scalar output and uses ones.
+            keep_graph: If True, keeps the computational graph for further
+                backward passes.
 
         Raises:
-            RuntimeError: If the tensor does not require gradients or if the gradient is not compatible.
+            RuntimeError: If the tensor does not require gradients or if the
+                gradient is not compatible.
 
         Note:
             - Setting `keep_graph=True` inside a training loop can lead to memory leaks.
@@ -494,7 +508,8 @@ class Tensor:
             gradient = np.array(gradient, dtype=np.float32)
             if gradient.shape != self._shape:
                 raise ValueError(
-                    f"Gradient shape {gradient.shape} does not match tensor shape {self._shape}"
+                    f"Gradient shape {gradient.shape} does not match "
+                    f"tensor shape {self._shape}"
                 )
 
         if self._grad is None:
@@ -556,7 +571,8 @@ class TensorUtils:
     @staticmethod
     def get_parameters(tensor: Tensor) -> list[Tensor]:
         """
-        Collect all parameters in the computational graph starting from the given tensor.
+        Collect all parameters in the computational graph starting from the
+        given tensor.
 
         Args:
             tensor: The starting tensor from which to collect parameters.
@@ -585,13 +601,15 @@ class TensorUtils:
     @staticmethod
     def count_by_type(tensor: Tensor) -> dict[TensorType, int]:
         """
-        Counts the number of tensors of each type in the computational graph starting from the given tensor.
+        Counts the number of tensors of each type in the computational graph
+        starting from the given tensor.
 
         Args:
             tensor: The starting tensor from which to count tensor types.
 
         Returns:
-            A dictionary with counts of each tensor type (INPUT, PARAMETER, INTERMEDIATE).
+            A dictionary with counts of each tensor type (INPUT, PARAMETER,
+            INTERMEDIATE).
         """
 
         counts: dict[TensorType, int] = {

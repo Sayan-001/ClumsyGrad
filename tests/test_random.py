@@ -6,7 +6,7 @@ import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.clumsygrad.random import rand, randn
-from src.clumsygrad.tensor import Tensor, TensorType
+from src.clumsygrad.tensor import TensorType
 
 
 class TestRand:

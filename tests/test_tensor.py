@@ -226,7 +226,7 @@ class TestBroadcastingOperations:
         y = Tensor(y_data, tensor_type=TensorType.PARAMETER)
 
         with pytest.raises(ValueError, match="Cannot broadcast shapes"):
-            result = x + y
+            x + y
 
     def test_end_to_end_broadcast_backward(self):
         """Test complete forward and backward pass with broadcasting."""
@@ -481,5 +481,6 @@ class TestMemoryManagement:
 
         assert memory_growth_mb <= max_allowed_growth_mb, (
             f"Memory leak detected: {memory_growth_mb:.2f} MB growth "
-            f"(threshold: {max_allowed_growth_mb:.2f} MB, {threshold_percentage}% of initial {initial_memory:.2f} MB)"
+            f"(threshold: {max_allowed_growth_mb:.2f} MB, {threshold_percentage}% "
+            f"of initial {initial_memory:.2f} MB)"
         )

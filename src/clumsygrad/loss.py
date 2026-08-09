@@ -38,7 +38,8 @@ def mse_loss(pred: Tensor, target: Tensor) -> Tensor:
 
 def mae_loss(pred: Tensor, target: Tensor) -> Tensor:
     """
-    Computes the Mean Absolute Error (MAE) loss between the predicted and target tensors.
+    Computes the Mean Absolute Error (MAE) loss between the predicted and
+    target tensors.
 
     Args:
         pred: The predicted tensor.

@@ -1,5 +1,6 @@
 """
-This module contains common optimizers for optimizing parameters in a computational graph.
+This module contains common optimizers for optimizing parameters in a
+computational graph.
 """
 
 from abc import ABC
@@ -36,7 +37,8 @@ class SGD(Optimizer):
     Stochastic Gradient Descent (SGD) optimizer.
 
     This optimizer updates parameters using the formula: `param -= lr * grad`,
-    where `param` is a parameter tensor, `lr` is the learning rate, and `grad` is the gradient of the parameter.
+    where `param` is a parameter tensor, `lr` is the learning rate, and
+    `grad` is the gradient of the parameter.
 
     Reference: Robbins, H., & Monro, S. (1951). A stochastic approximation method.
     """
@@ -68,7 +70,8 @@ class Adam(Optimizer):
     adaptive learning rates for each parameter using estimates of first and
     second moments of the gradients.
 
-    Reference: Kingma, D. P., & Ba, J. (2014). Adam: A method for stochastic optimization.
+    Reference: Kingma, D. P., & Ba, J. (2014). Adam: A method for stochastic
+    optimization.
     """
 
     def __init__(
@@ -85,8 +88,10 @@ class Adam(Optimizer):
         Args:
             parameters (list[Tensor]): List of parameter tensors to optimize.
             lr (float): Learning rate. Default is 0.001.
-            beta1 (float): Exponential decay rate for first moment estimates. Default is 0.9.
-            beta2 (float): Exponential decay rate for second moment estimates. Default is 0.999.
+            beta1 (float): Exponential decay rate for first moment estimates.
+                Default is 0.9.
+            beta2 (float): Exponential decay rate for second moment
+                estimates. Default is 0.999.
             eps (float): Small constant for numerical stability. Default is 1e-8.
         """
 

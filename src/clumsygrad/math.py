@@ -15,8 +15,10 @@ def sum(
 
     Args:
         tensor: The input Tensor to compute the sum of.
-        axis: Axis or axes along which the sum is computed. Default is None, which computes the sum of the flattened array.
-        keepdims: If True, the reduced axes are left in the result as dimensions with size one.
+        axis: Axis or axes along which the sum is computed. Default is None,
+            which computes the sum of the flattened array.
+        keepdims: If True, the reduced axes are left in the result as
+            dimensions with size one.
 
     Returns:
         A new Tensor containing the sum of the input tensor.
@@ -43,8 +45,10 @@ def mean(
 
     Args:
         tensor: The input Tensor to compute the mean of.
-        axis: Axis or axes along which the means are computed. Default is None, which computes the mean of the flattened array.
-        keepdims: If True, the reduced axes are left in the result as dimensions with size one.
+        axis: Axis or axes along which the means are computed. Default is
+            None, which computes the mean of the flattened array.
+        keepdims: If True, the reduced axes are left in the result as
+            dimensions with size one.
 
     Returns:
         A new Tensor containing the mean of the input tensor.

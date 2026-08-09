@@ -1,8 +1,9 @@
 """
-This module contains backward functions for various tensor operations in a computational graph.
+This module contains backward functions for various tensor operations in a
+computational graph.
 
-All functions have a generic signature that takes a tensor and the tensor's gradient as inputs,
-and returns a tuple of gradients for each parent tensor.
+All functions have a generic signature that takes a tensor and the tensor's
+gradient as inputs, and returns a tuple of gradients for each parent tensor.
 
 Args:
     tensor: Result tensor from the forward operation
@@ -177,7 +178,8 @@ def reshape_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     For :math:`z = \text{reshape}(x, \text{new\_shape})`:
 
     .. math::
-        \frac{\partial z}{\partial x} = \text{reshape}(\text{grad}, \text{original\_shape})
+        \frac{\partial z}{\partial x} = \text{reshape}(
+        \text{grad}, \text{original\_shape})
 
     Since reshape only changes the view of the data without changing values,
     the gradient is simply reshaped back to the original shape.
@@ -203,7 +205,8 @@ def sum_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
         0 & \text{otherwise}
         \end{cases}
 
-    This function handles dimension reduction by broadcasting gradients back to the original shape.
+    This function handles dimension reduction by broadcasting gradients back
+    to the original shape.
     """
 
     input_shape = tensor._extra.get("input_shape")
@@ -411,7 +414,8 @@ def softmax_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     The gradient computation simplifies to:
 
     .. math::
-        \frac{\partial L}{\partial x} = z \odot \left(\text{grad} - \sum(z \odot \text{grad})\right)
+        \frac{\partial L}{\partial x} = z \odot \left(\text{grad} -
+        \sum(z \odot \text{grad})\right)
     """
     softmax_output = tensor._data
 
@@ -435,9 +439,11 @@ def mse_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     For :math:`L = \frac{1}{n}\sum (\text{pred} - \text{target})^2`:
 
     .. math::
-        \frac{\partial L}{\partial \text{pred}} = \frac{2}{n}(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{pred}} = \frac{2}{n}(\text{pred} -
+        \text{target})
 
-        \frac{\partial L}{\partial \text{target}} = -\frac{2}{n}(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{target}} = -\frac{2}{n}(\text{pred} -
+        \text{target})
     """
     pred, target = tensor._parents
     diff = pred._data - target._data
@@ -452,9 +458,11 @@ def mae_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     For :math:`L = |\text{pred} - \text{target}|`:
 
     .. math::
-        \frac{\partial L}{\partial \text{pred}} = \frac{1}{n} \cdot \text{sign}(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{pred}} = \frac{1}{n} \cdot
+        \text{sign}(\text{pred} - \text{target})
 
-        \frac{\partial L}{\partial \text{target}} = -\frac{1}{n} \cdot \text{sign}(\text{pred} - \text{target})
+        \frac{\partial L}{\partial \text{target}} = -\frac{1}{n} \cdot
+        \text{sign}(\text{pred} - \text{target})
 
     where :math:`n` is the number of elements.
     """
@@ -475,7 +483,8 @@ def add_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for broadcasted addition operation.
 
-    For :math:`z = x + y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    For :math:`z = x + y` where :math:`x` and :math:`y` have different but
+    broadcastable shapes:
 
     .. math::
         \frac{\partial z}{\partial x} = \text{reduce}(\text{grad}, \text{left\_shape})
@@ -500,7 +509,8 @@ def sub_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for broadcasted subtraction operation.
 
-    For :math:`z = x - y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    For :math:`z = x - y` where :math:`x` and :math:`y` have different but
+    broadcastable shapes:
 
     .. math::
         \frac{\partial z}{\partial x} = \text{reduce}(\text{grad}, \text{left\_shape})
@@ -525,12 +535,15 @@ def mul_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     r"""
     Backward function for broadcasted element-wise multiplication.
 
-    For :math:`z = x \odot y` where :math:`x` and :math:`y` have different but broadcastable shapes:
+    For :math:`z = x \odot y` where :math:`x` and :math:`y` have different but
+    broadcastable shapes:
 
     .. math::
-        \frac{\partial z}{\partial x} = \text{reduce}(\text{grad} \odot \text{broadcast}(y), \text{left\_shape})
+        \frac{\partial z}{\partial x} = \text{reduce}(\text{grad} \odot
+        \text{broadcast}(y), \text{left\_shape})
 
-        \frac{\partial z}{\partial y} = \text{reduce}(\text{grad} \odot \text{broadcast}(x), \text{right\_shape})
+        \frac{\partial z}{\partial y} = \text{reduce}(\text{grad} \odot
+        \text{broadcast}(x), \text{right\_shape})
 
     Each tensor's gradient is the gradient times the other tensor's values,
     then reduced to match the original tensor shapes.

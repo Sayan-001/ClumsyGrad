@@ -26,7 +26,8 @@ def check_gradient(
 
     .. math::
         \frac{\partial \sum \text{fn}(x)}{\partial x_i} \approx
-        \frac{\sum \text{fn}(x_i + \epsilon) - \sum \text{fn}(x_i - \epsilon)}{2\epsilon}
+        \frac{\sum \text{fn}(x_i + \epsilon) -
+        \sum \text{fn}(x_i - \epsilon)}{2\epsilon}
 
     Args:
         fn: A function taking `tensor` and returning a Tensor derived from it.
@@ -43,7 +44,8 @@ def check_gradient(
     """
     if not tensor.requires_grad:
         raise ValueError(
-            "tensor must require gradients (use TensorType.PARAMETER) to check its gradient"
+            "tensor must require gradients (use TensorType.PARAMETER) to "
+            "check its gradient"
         )
 
     def scalarize(output: Tensor) -> float:

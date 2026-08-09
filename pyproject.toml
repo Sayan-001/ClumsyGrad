@@ -43,8 +43,7 @@ dev = [
   "pytest>=9.1.1",
   "pytest-cov>=7.1.0",
   "psutil>=7.2.2",
-  "black>=26.5.1",
-  "isort>=8.0.1",
+  "ruff>=0.14.0",
   "mypy>=1.14",
 ]
 docs = [
@@ -60,11 +59,12 @@ Issues = "https://github.com/ggsayan/ClumsyGrad/issues"
 [tool.setuptools.package-data]
 clumsygrad = ["py.typed"]
 
-[tool.black]
-target-version = ["py314"]
+[tool.ruff]
+target-version = "py314"
+extend-exclude = ["docs"]
 
-[tool.isort]
-profile = "black"
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
 
 [tool.mypy]
 python_version = "3.14"
