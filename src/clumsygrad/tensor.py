@@ -24,14 +24,14 @@ def no_grad() -> Iterator[None]:
     Context manager that disables graph tracking for the enclosed block.
 
     Tensors created from operations inside this block are always
-    `TensorType.INPUT` with `requires_grad=False`, regardless of their
+    ``TensorType.INPUT`` with ``requires_grad=False``, regardless of their
     operands, so no computational graph is built. Useful for inference or
     for manually updating parameters without recording those ops.
 
-    ```python
-    with no_grad():
-        y = w @ x + b
-    ```
+    .. code-block:: python
+
+        with no_grad():
+            y = w @ x + b
     """
     global _grad_enabled
     previous = _grad_enabled
