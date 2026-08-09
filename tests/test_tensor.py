@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.clumsygrad.loss import mse_loss
 from src.clumsygrad.math import cos, exp, log, sin, sum, tan
-from src.clumsygrad.tensor import Tensor, TensorType, TensorUtils
+from src.clumsygrad.tensor import Tensor, TensorType, TensorUtils, no_grad
 
 
 class TestTensorCreation:
@@ -325,6 +325,67 @@ class TestTensorUtils:
         assert counts[TensorType.PARAMETER] == 2
         assert counts[TensorType.INPUT] == 1
         assert counts[TensorType.INTERMEDIATE] == 2
+
+
+class TestNoGrad:
+    """Test the no_grad() context manager."""
+
+    def test_ops_produce_input_tensors(self):
+        a = Tensor([1.0, 2.0], tensor_type=TensorType.PARAMETER)
+        b = Tensor([3.0, 4.0], tensor_type=TensorType.PARAMETER)
+
+        with no_grad():
+            c = a + b
+
+        assert c._tensor_type == TensorType.INPUT
+        assert not c.requires_grad
+        assert c._parents == ()
+        assert c._grad_fn is None
+        np.testing.assert_array_equal(c.data, np.array([4.0, 6.0]))
+
+    def test_graph_untouched_outside_block(self):
+        a = Tensor([1.0, 2.0], tensor_type=TensorType.PARAMETER)
+        b = Tensor([3.0, 4.0], tensor_type=TensorType.PARAMETER)
+
+        with no_grad():
+            pass
+
+        c = a + b
+        assert c._tensor_type == TensorType.INTERMEDIATE
+        assert c.requires_grad
+
+    def test_restores_previous_state_on_exception(self):
+        a = Tensor([1.0], tensor_type=TensorType.PARAMETER)
+        b = Tensor([2.0], tensor_type=TensorType.PARAMETER)
+
+        with pytest.raises(ValueError):
+            with no_grad():
+                raise ValueError("boom")
+
+        c = a + b
+        assert c._tensor_type == TensorType.INTERMEDIATE
+
+    def test_nesting_restores_outer_state(self):
+        a = Tensor([1.0], tensor_type=TensorType.PARAMETER)
+        b = Tensor([2.0], tensor_type=TensorType.PARAMETER)
+
+        with no_grad():
+            with no_grad():
+                pass
+            c = a + b
+            assert c._tensor_type == TensorType.INPUT
+
+        d = a + b
+        assert d._tensor_type == TensorType.INTERMEDIATE
+
+    def test_optimizer_style_update_untracked(self):
+        w = Tensor([5.0, 5.0], tensor_type=TensorType.PARAMETER)
+
+        with no_grad():
+            updated = w - 0.1
+
+        assert updated._tensor_type == TensorType.INPUT
+        assert not updated.requires_grad
 
 
 class TestComplexOperations:

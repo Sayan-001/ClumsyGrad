@@ -5,7 +5,8 @@ build computational graphs for backpropagation.
 It also contains some utility functions for managing tensors and their gradients.
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
@@ -13,6 +14,32 @@ import numpy as np
 
 if TYPE_CHECKING:
     from .grad import GradientTuple
+
+_grad_enabled = True
+
+
+@contextmanager
+def no_grad() -> Iterator[None]:
+    """
+    Context manager that disables graph tracking for the enclosed block.
+
+    Tensors created from operations inside this block are always
+    `TensorType.INPUT` with `requires_grad=False`, regardless of their
+    operands, so no computational graph is built. Useful for inference or
+    for manually updating parameters without recording those ops.
+
+    ```python
+    with no_grad():
+        y = w @ x + b
+    ```
+    """
+    global _grad_enabled
+    previous = _grad_enabled
+    _grad_enabled = False
+    try:
+        yield
+    finally:
+        _grad_enabled = previous
 
 
 class TensorType(IntEnum):
@@ -99,13 +126,14 @@ class Tensor:
         """
         tensor_type = TensorType.INPUT
 
-        for parent in parents:
-            if (
-                parent._tensor_type == TensorType.PARAMETER
-                or parent._tensor_type == TensorType.INTERMEDIATE
-            ):
-                tensor_type = TensorType.INTERMEDIATE
-                break
+        if _grad_enabled:
+            for parent in parents:
+                if (
+                    parent._tensor_type == TensorType.PARAMETER
+                    or parent._tensor_type == TensorType.INTERMEDIATE
+                ):
+                    tensor_type = TensorType.INTERMEDIATE
+                    break
 
         node = Tensor(data=data, tensor_type=tensor_type)
 
@@ -116,7 +144,8 @@ class Tensor:
             if extra:
                 node._extra.update(extra)
 
-        node._requires_grad = any(parent._requires_grad for parent in parents)
+        if _grad_enabled:
+            node._requires_grad = any(parent._requires_grad for parent in parents)
 
         return node
 
