@@ -284,6 +284,20 @@ class TestBackpropagation:
         expected_grad = np.array([[2, 2], [2, 2]], dtype=np.float32)
         np.testing.assert_array_equal(a.grad, expected_grad)
 
+    def test_backward_deep_chain_does_not_recurse(self):
+        # backward() walks the graph iteratively, so a chain far deeper than
+        # Python's default recursion limit (~1000) should still complete.
+        depth = 5000
+        a = Tensor([1.0], tensor_type=TensorType.PARAMETER)
+
+        node = a
+        for _ in range(depth):
+            node = node + 1
+
+        node.backward()
+
+        np.testing.assert_array_equal(a.grad, np.array([1.0], dtype=np.float32))
+
 
 class TestTensorUtils:
     """Test TensorUtils functionality."""

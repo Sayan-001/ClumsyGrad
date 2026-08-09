@@ -506,17 +506,22 @@ class Tensor:
         topo_order: list[Tensor] = []
         visited: set[int] = set()
 
-        def build_topo(node: Tensor) -> None:
+        # Topo-Sort
+        stack: list[tuple[Tensor, bool]] = [(self, False)]
+        while stack:
+            node, expanded = stack.pop()
+
+            if expanded:
+                topo_order.append(node)
+                continue
+
             if node._id in visited or not node._requires_grad:
-                return
+                continue
             visited.add(node._id)
 
+            stack.append((node, True))
             for parent in node._parents:
-                build_topo(parent)
-
-            topo_order.append(node)
-
-        build_topo(self)
+                stack.append((parent, False))
 
         for node in reversed(topo_order):
             if node._grad_fn is not None and node._grad is not None:
