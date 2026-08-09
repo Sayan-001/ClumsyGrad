@@ -6,8 +6,12 @@ It also contains some utility functions for managing tensors and their gradients
 
 from collections.abc import Callable
 from enum import IntEnum
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from .grad import GradientTuple
 
 
 class TensorType(IntEnum):
@@ -61,12 +65,22 @@ class Tensor:
         "_tensor_type",
     )
 
+    _data: np.ndarray
+    _extra: dict[str, Any]
+    _grad: np.ndarray | None
+    _grad_fn: Callable[[Tensor, np.ndarray], GradientTuple] | None
+    _id: int
+    _parents: tuple[Tensor, ...]
+    _requires_grad: bool
+    _shape: tuple[int, ...]
+    _tensor_type: TensorType
+
     @staticmethod
     def _create_node(
-        data: np.ndarray | list | float,
-        grad_fn: Callable | None,
+        data: np.ndarray | list[Any] | float,
+        grad_fn: Callable[[Tensor, np.ndarray], GradientTuple] | None,
         parents: tuple[Tensor, ...],
-        extra: dict | None = None,
+        extra: dict[str, Any] | None = None,
     ) -> Tensor:
         """
         Creates a new tensor node in the computational graph.
@@ -105,7 +119,9 @@ class Tensor:
         return node
 
     @staticmethod
-    def _broadcast_shapes(shape1: tuple, shape2: tuple) -> tuple:
+    def _broadcast_shapes(
+        shape1: tuple[int, ...], shape2: tuple[int, ...]
+    ) -> tuple[int, ...]:
         """
         Determine the broadcasted shape for two tensor shapes.
 
@@ -141,7 +157,7 @@ class Tensor:
         return tuple(result_shape)
 
     @staticmethod
-    def _can_broadcast(shape1: tuple, shape2: tuple) -> bool:
+    def _can_broadcast(shape1: tuple[int, ...], shape2: tuple[int, ...]) -> bool:
         """
         Check if two shapes can be broadcasted together.
 
@@ -158,12 +174,12 @@ class Tensor:
         except ValueError:
             return False
 
-    def _cleanup_references(self):
+    def _cleanup_references(self) -> None:
         self._parents = ()
 
     def __init__(
         self,
-        data: np.ndarray | list | float,
+        data: np.ndarray | list[Any] | float,
         tensor_type: TensorType = TensorType.INPUT,
     ):
         """
@@ -191,14 +207,14 @@ class Tensor:
         else:
             self._requires_grad = False
 
-        self._parents: tuple[Tensor, ...] = ()
+        self._parents = ()
 
         self._id = Tensor._id_counter
         Tensor._id_counter += 1
 
         self._extra = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         grad_fn_name = self._grad_fn.__name__ if self._grad_fn else None
         return (
             f"Tensor(id={self._id}, shape={self._shape}, "
@@ -213,7 +229,7 @@ class Tensor:
         return self._data
 
     @property
-    def shape(self) -> tuple:
+    def shape(self) -> tuple[int, ...]:
         """Return the shape of the tensor."""
         return self._shape
 
@@ -223,7 +239,7 @@ class Tensor:
         return self._grad
 
     @grad.setter
-    def grad(self, value: np.ndarray):
+    def grad(self, value: np.ndarray | None) -> None:
         """Set the gradient of the tensor."""
         self._grad = value
 
@@ -442,7 +458,7 @@ class Tensor:
 
     def backward(
         self, gradient: np.ndarray | float | None = None, keep_graph: bool = False
-    ):
+    ) -> None:
         """
         Performs the backward pass to compute gradients. Once the backward pass is completed, the graph is freed from memory unless `keep_graph` is set to True.
         Only the current tensor and all INPUT/PARAMETER tensors will be retained in memory.
@@ -490,7 +506,7 @@ class Tensor:
         topo_order: list[Tensor] = []
         visited: set[int] = set()
 
-        def build_topo(node: Tensor):
+        def build_topo(node: Tensor) -> None:
             if node._id in visited or not node._requires_grad:
                 return
             visited.add(node._id)

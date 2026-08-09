@@ -75,7 +75,7 @@ def sigmoid(tensor: Tensor) -> Tensor:
     return new_tensor
 
 
-def softmax(tensor: Tensor, axis=-1) -> Tensor:
+def softmax(tensor: Tensor, axis: int = -1) -> Tensor:
     r"""
     Element-wise softmax activation function.
 

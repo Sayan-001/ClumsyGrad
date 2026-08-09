@@ -7,7 +7,9 @@ import numpy as np
 from .tensor import Tensor
 
 
-def sum(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
+def sum(
+    tensor: Tensor, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+) -> Tensor:
     """
     Compute the sum of the tensor along specified axis.
 
@@ -23,7 +25,9 @@ def sum(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
     from .grad import sum_backward
 
     new_tensor = Tensor._create_node(
-        data=np.sum(tensor._data, axis=axis, keepdims=keepdims),
+        # numpy's overloads key off `keepdims` as a Literal; a plain `bool` can't
+        # select one, so the call is untypeable without narrowing keepdims first.
+        data=np.sum(tensor._data, axis=axis, keepdims=keepdims),  # type: ignore[call-overload]
         grad_fn=sum_backward,
         parents=(tensor,),
         extra={"axis": axis, "keepdims": keepdims, "input_shape": tensor._shape},
@@ -31,7 +35,9 @@ def sum(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
     return new_tensor
 
 
-def mean(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
+def mean(
+    tensor: Tensor, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+) -> Tensor:
     """
     Compute the mean of the tensor along specified axis.
 
@@ -47,7 +53,8 @@ def mean(tensor: Tensor, axis=None, keepdims=False) -> Tensor:
     from .grad import mean_backward
 
     new_tensor = Tensor._create_node(
-        data=np.mean(tensor._data, axis=axis, keepdims=keepdims),
+        # See the comment on the `np.sum` call above re: keepdims typing.
+        data=np.mean(tensor._data, axis=axis, keepdims=keepdims),  # type: ignore[call-overload]
         grad_fn=mean_backward,
         parents=(tensor,),
         extra={"axis": axis, "keepdims": keepdims, "input_shape": tensor._shape},

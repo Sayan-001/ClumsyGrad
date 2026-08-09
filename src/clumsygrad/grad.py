@@ -209,6 +209,7 @@ def sum_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     input_shape = tensor._extra.get("input_shape")
     axis = tensor._extra.get("axis")
     keepdims = tensor._extra.get("keepdims", False)
+    assert input_shape is not None
 
     if axis is not None and not keepdims:
         if isinstance(axis, int):
@@ -244,6 +245,7 @@ def mean_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     input_shape = tensor._extra.get("input_shape")
     axis = tensor._extra.get("axis")
     keepdims = tensor._extra.get("keepdims", False)
+    assert input_shape is not None
 
     if axis is None:
         n = np.prod(input_shape)
@@ -482,6 +484,8 @@ def add_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     """
     left_shape = tensor._extra.get("left_shape")
     right_shape = tensor._extra.get("right_shape")
+    assert left_shape is not None
+    assert right_shape is not None
 
     left_grad = _reduce_gradient_to_shape(grad, left_shape)
     right_grad = _reduce_gradient_to_shape(grad, right_shape)
@@ -505,6 +509,8 @@ def sub_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     """
     left_shape = tensor._extra.get("left_shape")
     right_shape = tensor._extra.get("right_shape")
+    assert left_shape is not None
+    assert right_shape is not None
 
     left_grad = _reduce_gradient_to_shape(grad, left_shape)
     right_grad = _reduce_gradient_to_shape(-grad, right_shape)
@@ -529,6 +535,8 @@ def mul_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
 
     left_shape = tensor._extra.get("left_shape")
     right_shape = tensor._extra.get("right_shape")
+    assert left_shape is not None
+    assert right_shape is not None
     x, y = tensor._parents
 
     y_broadcasted = np.broadcast_to(y._data, grad.shape)
@@ -540,7 +548,9 @@ def mul_broadcast_backward(tensor: Tensor, grad: np.ndarray) -> GradientTuple:
     return (left_grad, right_grad)
 
 
-def _reduce_gradient_to_shape(grad: np.ndarray, target_shape: tuple) -> np.ndarray:
+def _reduce_gradient_to_shape(
+    grad: np.ndarray, target_shape: tuple[int, ...]
+) -> np.ndarray:
     r"""
     Reduce gradient from broadcasted shape back to target shape.
 
@@ -553,7 +563,7 @@ def _reduce_gradient_to_shape(grad: np.ndarray, target_shape: tuple) -> np.ndarr
     """
 
     if target_shape == ():
-        return np.sum(grad)
+        return np.asarray(np.sum(grad))
 
     result = grad
 

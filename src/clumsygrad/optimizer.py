@@ -19,13 +19,13 @@ class Optimizer(ABC):
             p for p in parameters if p._tensor_type == TensorType.PARAMETER
         ]
 
-    def step(self):
+    def step(self) -> None:
         """Update parameters. Must be implemented by subclasses."""
         raise NotImplementedError(
             "Optimizer subclasses must implement the step method."
         )
 
-    def zero_grad(self):
+    def zero_grad(self) -> None:
         """Zero gradients for all parameters."""
         for param in self.parameters:
             param.grad = None
@@ -53,7 +53,7 @@ class SGD(Optimizer):
         super().__init__(parameters)
         self.lr = lr
 
-    def step(self):
+    def step(self) -> None:
         """Update parameters."""
         for param in self.parameters:
             if param.grad is not None:
@@ -97,10 +97,14 @@ class Adam(Optimizer):
         self.eps = eps
         self.t = 0
 
-        self.biased_first_moment = [np.zeros_like(p._data) for p in self.parameters]
-        self.biased_second_moment = [np.zeros_like(p._data) for p in self.parameters]
+        self.biased_first_moment: list[np.ndarray] = [
+            np.zeros_like(p._data) for p in self.parameters
+        ]
+        self.biased_second_moment: list[np.ndarray] = [
+            np.zeros_like(p._data) for p in self.parameters
+        ]
 
-    def step(self):
+    def step(self) -> None:
         """Update parameters."""
         self.t += 1
 
