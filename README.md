@@ -14,7 +14,9 @@ A minimal Python library for automatic differentiation, built on top of NumPy. T
 
 - **Dynamic Computational Graphs**: Graphs are created on the fly.
 - **Automatic Differentiation**: Compute gradients automatically using the chain rule.
-- **Basic Tensor Operations**: Supports addition, subtraction, multiplication, matrix multiplication, power, exp, etc.
+- **Basic Tensor Operations**: Supports addition, subtraction, multiplication, matrix multiplication, power, exp, indexing/slicing, etc.
+- **Gradient Checking**: Verify backward-pass correctness against numerical gradients.
+- **`no_grad()` Context Manager**: Disable graph tracking for inference or manual updates.
 
 ## Installation
 
@@ -100,4 +102,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Documentation
 
-For more detailed information, tutorials, and API reference, you can check out the [official documentation](https://clumsygrad.readthedocs.io/en/latest/).
+For more detailed information, tutorials, runnable examples, and API reference, you can check out the [official documentation](https://clumsygrad.readthedocs.io/en/latest/).
