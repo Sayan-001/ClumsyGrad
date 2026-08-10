@@ -4,9 +4,6 @@ API Reference
 
 This section provides detailed documentation for all ClumsyGrad modules and functions.
 
-API Reference
-=============
-
 .. toctree::
    :maxdepth: 2
    :caption: API Documentation:
@@ -18,3 +15,4 @@ API Reference
    clumsygrad.loss
    clumsygrad.optimizer
    clumsygrad.grad
+   clumsygrad.gradcheck

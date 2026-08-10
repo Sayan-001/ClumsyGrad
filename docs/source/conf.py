@@ -2,6 +2,7 @@
 
 import os
 import sys
+from importlib.metadata import version as _version
 
 # 2 levels from docs/source to reach project root
 sys.path.insert(0, os.path.abspath('../../'))
@@ -10,10 +11,10 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 
 # -- Project information -----------------------------------------------------
 project = 'ClumsyGrad'
-copyright = '2025, Sayan Gupta'
+copyright = '2026, Sayan Gupta'
 author = 'Sayan Gupta'
-release = '0.2.0'  
-version = '0.2.0'  
+release = _version('clumsygrad')
+version = release
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -27,10 +28,6 @@ extensions = [
     'sphinx.ext.ifconfig',         # Conditional content
 ]
 
-mathjax_config = {
-    'extensions': ['tex2jax.js'],
-    'jax': ['input/TeX', 'output/HTML-CSS'],
-}
 
 # Napoleon settings
 napoleon_google_docstring = True
@@ -57,20 +54,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 master_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_book_theme'
+html_theme = 'shibuya'
 
 html_theme_options = {
-    "repository_url": "https://github.com/Sayan-001/ClumsyGrad",
-    "repository_branch": "main",
-    "use_repository_button": True,
-    "show_toc_level": 2,
-    "navigation_with_keys": False,
-    "show_navbar_depth": 1,
-    "logo": {
-        "text": "ClumsyGrad",
-    },
-    "extra_footer": "<p>Built with ❤️ for educational purposes</p>",
-    "search_bar_text": "Search the docs...",
+    "accent_color": "ruby",
+    "github_url": "https://github.com/ggsayan/ClumsyGrad",
 }
 
 html_static_path = ['_static']
@@ -111,7 +99,7 @@ latex_elements = {
 
         % --- Color Definitions ---
         \usepackage{xcolor}
-        \definecolor{sphinxblue}{RGB}{0,102,204}       % A blue color for headings and links
+        \definecolor{accentcolor}{RGB}{225,56,94}      % Ruby accent, matching the HTML theme
         \definecolor{sphinxtitle}{RGB}{47,68,78}      % A darker color for main titles
         \definecolor{sphinxcodebg}{RGB}{248,249,250}  % Light background for code blocks
 
@@ -120,15 +108,15 @@ latex_elements = {
         \usepackage{titlesec}
         \titleformat{\chapter}[display]
           {\normalfont\huge\bfseries\color{sphinxtitle}} % Chapter title format
-          {\chaptertitlename\ \thechapter}{20pt}{\Huge\color{sphinxblue}} % Chapter name, number, spacing, style
+          {\chaptertitlename\ \thechapter}{20pt}{\Huge\color{accentcolor}} % Chapter name, number, spacing, style
         \titleformat{\section}
-          {\normalfont\Large\bfseries\color{sphinxblue}} % Section title format
+          {\normalfont\Large\bfseries\color{accentcolor}} % Section title format
           {\thesection}{1em}{}                          % Section number, spacing, style
         \titleformat{\subsection}
-          {\normalfont\large\bfseries\color{sphinxblue}} % Subsection title format
+          {\normalfont\large\bfseries\color{accentcolor}} % Subsection title format
           {\thesubsection}{1em}{}                       % Subsection number, spacing, style
         \titleformat{\subsubsection}
-          {\normalfont\normalsize\bfseries\color{sphinxblue}} % Subsubsection title format
+          {\normalfont\normalsize\bfseries\color{accentcolor}} % Subsubsection title format
           {\thesubsubsection}{1em}{}                     % Subsubsection number, spacing, style
 
         % --- List Styling (more compact lists) ---
@@ -143,9 +131,9 @@ latex_elements = {
         % These settings customize the appearance of links in the PDF
         \hypersetup{
             colorlinks=true,                % Links are colored (not boxed)
-            linkcolor=sphinxblue,           % Color for internal links
-            urlcolor=sphinxblue,            % Color for external URLs
-            citecolor=sphinxblue,           % Color for citation links
+            linkcolor=accentcolor,           % Color for internal links
+            urlcolor=accentcolor,            % Color for external URLs
+            citecolor=accentcolor,           % Color for citation links
             bookmarks=true,                 % Create PDF bookmarks
             bookmarksopen=true,             % Open bookmarks tree by default
             bookmarksopenlevel=2,           % Expand bookmarks to this level
@@ -159,7 +147,8 @@ latex_elements = {
         % --- Table of Contents Styling ---
         % Sphinx generates the \tableofcontents. These lines can fine-tune its appearance.
         \usepackage{tocloft}
-        \renewcommand{\cftchapfont}{\normalfont\Large\bfseries} % Chapter font in ToC
+        \renewcommand{\cftchapfont}{\normalfont\Large\bfseries\color{sphinxtitle}} % Chapter font in ToC
+        \renewcommand{\cftchappagefont}{\normalfont\bfseries\color{accentcolor}}   % Chapter page number in ToC
         \renewcommand{\cftsecfont}{\normalfont\bfseries}        % Section font in ToC
         \setlength{\cftbeforechapskip}{0.5em}                   % Space before chapter entries in ToC
         \setlength{\cftbeforesecskip}{0.2em}                    % Space before section entries in ToC
@@ -180,23 +169,23 @@ latex_elements = {
         }
 
         % --- MakeTitle (Title Page) ---
-        % Sphinx generates a title page based on latex_documents.
-        % The 'maketitle' element can be used for a very custom one.
-        % For simplicity, we'll let Sphinx's default work, which is often sufficient.
-        % If you need a custom title page, you can redefine \maketitle here.
-        % Example of a simpler custom title:
-        % \renewcommand{\maketitle}{%
-        %   \begin{titlepage}%
-        %     \centering%
-        %     \vspace*{\stretch{1}}%
-        %     {\Huge\bfseries\color{sphinxtitle} \@title \par}%
-        %     \vspace{0.5cm}%
-        %     {\Large\itshape \@author \par}%
-        %     \vspace*{\stretch{2}}%
-        %     {\large \today \par}%
-        %   \end{titlepage}%
-        %   \cleardoublepage%
-        % }
+        % Custom title page matching the HTML theme's ruby accent.
+        \renewcommand{\maketitle}{%
+          \begin{titlepage}%
+            \centering%
+            \vspace*{\stretch{1}}%
+            {\Huge\bfseries\color{sphinxtitle} \@title \par}%
+            \vspace{0.4cm}%
+            {\color{accentcolor}\rule{0.3\textwidth}{1.2pt}\par}%
+            \vspace{0.6cm}%
+            {\Large\color{accentcolor} A Simple Automatic Differentiation Library built on top of NumPy \par}%
+            \vspace*{\stretch{2}}%
+            {\large \@author \par}%
+            \vspace{0.2cm}%
+            {\large \today \par}%
+          \end{titlepage}%
+          \cleardoublepage%
+        }
 
         % --- Other useful packages ---
         \usepackage{emptypage}          % Ensures truly blank pages are empty (no headers/footers)

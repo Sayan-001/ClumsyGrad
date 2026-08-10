@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 
 [project]
 name = "clumsygrad"
-version = "0.2.1"
+version = "1.0.0"
 authors = [
   { name="Sayan Gupta" },
 ]
@@ -17,20 +17,16 @@ maintainers = [
 
 description = "A minimal python library for automatic differentiation, built on top of NumPy."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.14"
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 5 - Production/Stable",
 
   "Intended Audience :: Developers",
-  "Intended Audience :: Science/Research", 
+  "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3 :: Only",
 ]
 
@@ -40,9 +36,38 @@ license-files = ["LICENSE"]
 
 # metadata for the package
 keywords = ["autograd", "automatic-differentiation", "machine-learning"]
-dependencies = ["numpy>=2.0.0"]
+dependencies = ["numpy>=2.5.0"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.1.1",
+  "pytest-cov>=7.1.0",
+  "psutil>=7.2.2",
+  "ruff>=0.14.0",
+  "mypy>=1.14",
+  "pre-commit>=4.0.0",
+]
+docs = [
+  "sphinx>=9.1.0",
+  "shibuya>=2026.7.12",
+]
 
 # List URLs that are relevant to the project
 [project.urls]
-Homepage = "https://github.com/Sayan-001/ClumsyGrad"
-Issues = "https://github.com/Sayan-001/ClumsyGrad/issues"
+Homepage = "https://github.com/ggsayan/ClumsyGrad"
+Issues = "https://github.com/ggsayan/ClumsyGrad/issues"
+
+[tool.setuptools.package-data]
+clumsygrad = ["py.typed"]
+
+[tool.ruff]
+target-version = "py314"
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unused_ignores = true

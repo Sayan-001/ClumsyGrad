@@ -25,16 +25,16 @@ INPUT tensors do not store gradients, while PARAMETER tensors do.
 
    from clumsygrad.tensor import Tensor, TensorType
    from clumsygrad.random import randn
-   
+
    # Create a tensor from a list (INPUT type by default)
    x = Tensor([[1.0, 2.0]])
    print(f"x: {x}")
    print(f"x requires_grad: {x.requires_grad}")  # False for INPUT type
-   
+
    # Create a parameter tensor (requires_grad=True by default)
    w = Tensor([[0.5, 1.5]], tensor_type=TensorType.PARAMETER)
    print(f"w requires_grad: {w.requires_grad}")  # True for PARAMETER type
-   
+
    # Random tensors
    z1 = randn((4, 5), tensor_type=TensorType.PARAMETER)  # Uniform random [0, 1)
 
@@ -48,39 +48,39 @@ Tensors support various arithmetic operations, including addition, subtraction, 
    # Create parameter tensors for operations
    a = Tensor([[1.0, 2.0]])
    b = Tensor([[3.0, 4.0]])
-   
+
    # Arithmetic operations
    add_result = a + b        # Element-wise addition
    sub_result = a - b        # Element-wise subtraction
    mul_result = a * b        # Element-wise multiplication
-   
+
    # Scalar operations
    scalar_add = a + 5.0      # Add scalar to all elements
    scalar_mul = a * 2.0      # Multiply all elements by scalar
-   
+
    # Matrix operations
    x = Tensor([[1.0, 2.0]])
    y = Tensor([[3.0], [4.0]])
    matmul_result = x @ y     # Matrix multiplication
-   
+
    # Transpose
    transposed = x.T()
 
 Automatic Differentiation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Automatic Differentiation (AD) works by decomposing a function into a sequence of elementary operations 
+Automatic Differentiation (AD) works by decomposing a function into a sequence of elementary operations
 and applying the chain rule locally at each step.
 
 .. code-block:: python
 
    # Simple example: y = x^2 + 3x + 1
    x = Tensor([[2.0]], tensor_type=TensorType.PARAMETER)
-   
+
    # Forward pass
    y = x ** 2 + 3 * x + 1
    print(f"y = {y.data}")  # Should be [15.0]
-   
+
    # Backward pass
    y.backward()
    print(f"dy/dx = {x.grad}")  # Should be [7.0] (derivative: 2x + 3 = 4 + 3 = 7)
@@ -88,8 +88,9 @@ and applying the chain rule locally at each step.
 Best Practices
 ~~~~~~~~~~~~~~
 
-1. **Use appropriate tensor types**: INPUT for data, PARAMETER for trainable weights
-2. **Reset gradients**: Always reset gradients before backward pass in training loops
-3. **Scalar outputs for backward()**: Call backward() only on scalar tensors (typically loss values)
+1. **Use appropriate tensor types**: INPUT for data, PARAMETER for trainable weights.
+2. **Reset gradients**: Always reset gradients before backward pass in training loops.
+3. **Scalar outputs for backward()**: Call backward() only on scalar tensors (typically loss values).
 
-For more usage and API documentation, see the :doc:`api_reference` section.
+For complete, runnable training examples see :doc:`examples`. For more usage and
+API documentation, see the :doc:`api_reference` section.
