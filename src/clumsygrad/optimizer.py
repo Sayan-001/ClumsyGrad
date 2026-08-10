@@ -49,7 +49,7 @@ class SGD(Optimizer):
 
         Args:
             parameters (list[Tensor]): List of parameter tensors to optimize.
-            lr (float): Learning rate for the optimizer. Default is 0.01.
+            lr (float): Learning rate for the optimizer.
         """
 
         super().__init__(parameters)
@@ -87,12 +87,11 @@ class Adam(Optimizer):
 
         Args:
             parameters (list[Tensor]): List of parameter tensors to optimize.
-            lr (float): Learning rate. Default is 0.001.
+            lr (float): Learning rate.
             beta1 (float): Exponential decay rate for first moment estimates.
-                Default is 0.9.
             beta2 (float): Exponential decay rate for second moment
-                estimates. Default is 0.999.
-            eps (float): Small constant for numerical stability. Default is 1e-8.
+                estimates.
+            eps (float): Small constant for numerical stability.
         """
 
         super().__init__(parameters)

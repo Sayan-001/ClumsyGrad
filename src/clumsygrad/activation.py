@@ -84,7 +84,7 @@ def softmax(tensor: Tensor, axis: int = -1) -> Tensor:
 
     Args:
         tensor: Input tensor.
-        axis: Axis along which to compute the softmax. Default is -1 (last axis).
+        axis: Axis along which to compute the softmax.
 
     Returns:
         Tensor: A new tensor containing the softmax activation of the input tensor.

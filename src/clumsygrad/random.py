@@ -9,7 +9,7 @@ def rand(shape: tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) -> 
 
     Args:
         shape: The shape of the tensor to create.
-        tensor_type: The type of the tensor (default is INPUT).
+        tensor_type: The type of the tensor.
 
     Returns:
         A new Tensor instance with random values.
@@ -25,7 +25,7 @@ def randn(shape: tuple[int, ...], tensor_type: TensorType = TensorType.INPUT) ->
 
     Args:
         shape: The shape of the tensor to create.
-        tensor_type: The type of the tensor (default is INPUT).
+        tensor_type: The type of the tensor.
 
     Returns:
         A new Tensor instance with random values from a normal distribution.

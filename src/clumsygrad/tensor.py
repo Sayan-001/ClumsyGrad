@@ -217,7 +217,7 @@ class Tensor:
         Args:
             data: The initial data for the tensor.
             tensor_type (TensorType): The type of the tensor, as
-                TensorType.INPUT/PARAMETER/INTERMEDIATE (default is INPUT).
+                TensorType.INPUT/PARAMETER/INTERMEDIATE.
 
         Note:
             - The tensor will not track/propagate gradients if it is of type INPUT.
