@@ -14,6 +14,7 @@ ClumsyGrad
    quickstart
    tutorial
    examples
+   internals
    api_reference
 
 Key Features

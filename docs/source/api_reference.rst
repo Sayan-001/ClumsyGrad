@@ -15,3 +15,4 @@ This section provides detailed documentation for all ClumsyGrad modules and func
    clumsygrad.loss
    clumsygrad.optimizer
    clumsygrad.grad
+   clumsygrad.gradcheck
